@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>配料库存 - 后台</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .admin-sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 240px;
+            height: 100vh;
+            background: #2c3e50;
+            color: white;
+            padding: 20px 0;
+        }
+        .admin-sidebar h3 {
+            text-align: center;
+            padding: 0 20px 20px;
+            border-bottom: 1px solid #444;
+            margin-bottom: 20px;
+        }
+        .admin-sidebar a {
+            display: block;
+            padding: 12px 24px;
+            color: #ddd;
+            text-decoration: none;
+            transition: 0.2s;
+        }
+        .admin-sidebar a:hover, .admin-sidebar a.active {
+            background: #e74c3c;
+            color: white;
+        }
+        .admin-content {
+            margin-left: 240px;
+            padding: 20px;
+            background: #f5f5f5;
+            min-height: 100vh;
+        }
+        .admin-header {
+            background: white;
+            padding: 16px 24px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .add-btn {
+            background: #27ae60;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        table {
+            width: 100%;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        th {
+            background: #f8f9fa;
+            font-weight: 600;
+        }
+        .stock-input {
+            width: 70px;
+            padding: 6px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            text-align: center;
+        }
+        .btn-sm {
+            padding: 4px 12px;
+            font-size: 12px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            margin: 0 4px;
+        }
+        .btn-edit {
+            background: #3498db;
+            color: white;
+        }
+        .btn-delete {
+            background: #e74c3c;
+            color: white;
+        }
+        .btn-save {
+            background: #27ae60;
+            color: white;
+        }
+        .low-stock {
+            color: #e67e22;
+            font-weight: bold;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: white;
+            padding: 24px;
+            border-radius: 16px;
+            width: 400px;
+        }
+        .modal-content input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+<div class="admin-sidebar">
+    <h3>🍕 披萨后台</h3>
+    <a href=" ">📋 订单管理</a >
+    <a href="admin_inventory.html" class="active">📦 配料库存</a >
+    <a href="admin_reports.html">📊 数据报表</a >
+    <a href="menu.html" style="margin-top: 50px;">🏠 返回前台</a >
+    <a href="#" id="adminLogoutBtn">🚪 退出登录</a >
+</div>
+
+<div class="admin-content">
+    <div class="admin-header">
+        <h2>配料库存管理</h2>
+        <button class="add-btn" onclick="openAddModal()">+ 新增配料</button>
+    </div>
+
+    <table>
+        <thead>
+        <tr><th>ID</th><th>配料名称</th><th>价格(元)</th><th>库存数量</th><th>状态</th><th>操作</th></tr>
+        </thead>
+        <tbody id="toppingsTableBody"></tbody>
+    </table>
+</div>
+
+<!-- 新增/编辑弹窗 -->
+<div id="modal" class="modal">
+    <div class="modal-content">
+        <h3 id="modalTitle">新增配料</h3>
+        <input type="text" id="toppingName" placeholder="配料名称">
+        <input type="number" id="toppingPrice" placeholder="价格(元)">
+        <input type="number" id="toppingStock" placeholder="库存数量">
+        <div style="display: flex; gap: 12px; margin-top: 20px;">
+            <button class="btn-sm btn-save" onclick="saveTopping()">保存</button>
+            <button class="btn-sm btn-delete" onclick="closeModal()">取消</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let toppings = [];
+    let editId = null;
+
+    function checkAdminAuth() {
+        const token = localStorage.getItem('adminToken');
+        if (!token) window.location.href = 'admin_login.html';
+    }
+    checkAdminAuth();
+
+    function loadToppings() {
+        const saved = localStorage.getItem('toppings');
+        if (saved) {
+            toppings = JSON.parse(saved);
+        } else {
+            toppings = [
+                { topping_id: 1, name: '加芝士', price: 8, stock_quantity: 100 },
+                { topping_id: 2, name: '培根', price: 10, stock_quantity: 50 },
+                { topping_id: 3, name: '蘑菇', price: 6, stock_quantity: 80 },
+                { topping_id: 4, name: '青椒', price: 5, stock_quantity: 15 },
+                { topping_id: 5, name: '玉米', price: 5, stock_quantity: 70 },
+                { topping_id: 6, name: '洋葱', price: 4, stock_quantity: 90 }
+            ];
+            localStorage.setItem('toppings', JSON.stringify(toppings));
+        }
+        renderTable();
+    }
+
+    function renderTable() {
+        const tbody = document.getElementById('toppingsTableBody');
+        tbody.innerHTML = toppings.map(t => {
+            const isLowStock = t.stock_quantity < 20;
+            return `<tr>
+                    <td>${t.topping_id}</td>
+                    <td>${t.name}</td>
+                    <td>¥${t.price}</td>
+                    <td>
+                        <input type="number" class="stock-input" id="stock_${t.topping_id}" value="${t.stock_quantity}" min="0">
+                    </td>
+                    <td class="${isLowStock ? 'low-stock' : ''}">${isLowStock ? '⚠️ 库存不足' : '充足'}</td>
+                    <td>
+                        <button class="btn-sm btn-edit" onclick="updateStock(${t.topping_id})">更新库存</button>
+                        <button class="btn-sm btn-delete" onclick="deleteTopping(${t.topping_id})">删除</button>
+                    </td>
+                </tr>`;
+        }).join('');
+    }
+
+    function updateStock(toppingId) {
+        const input = document.getElementById(`stock_${toppingId}`);
+        const newStock = parseInt(input.value);
+        const topping = toppings.find(t => t.topping_id === toppingId);
+        if (topping) {
+            topping.stock_quantity = newStock;
+            localStorage.setItem('toppings', JSON.stringify(toppings));
+            renderTable();
+            alert('库存已更新');
+        }
+    }
+
+    function deleteTopping(toppingId) {
+        if (confirm('确定要删除这个配料吗？')) {
+            toppings = toppings.filter(t => t.topping_id !== toppingId);
+            localStorage.setItem('toppings', JSON.stringify(toppings));
+            renderTable();
+            alert('已删除');
+        }
+    }
+
+    function openAddModal() {
+        editId = null;
+        document.getElementById('modalTitle').innerText = '新增配料';
+        document.getElementById('toppingName').value = '';
+        document.getElementById('toppingPrice').value = '';
+        document.getElementById('toppingStock').value = '';
+        document.getElementById('modal').style.display = 'flex';
+    }
+
+    function closeModal() {
+        document.getElementById('modal').style.display = 'none';
+    }
+
+    function saveTopping() {
+        const name = document.getElementById('toppingName').value;
+        const price = parseFloat(document.getElementById('toppingPrice').value);
+        const stock = parseInt(document.getElementById('toppingStock').value);
+
+        if (!name || isNaN(price) || isNaN(stock)) {
+            alert('请填写完整信息');
+            return;
+        }
+
+        if (editId === null) {
+            const newId = Math.max(...toppings.map(t => t.topping_id), 0) + 1;
+            toppings.push({ topping_id: newId, name, price, stock_quantity: stock });
+        } else {
+            const topping = toppings.find(t => t.topping_id === editId);
+            if (topping) {
+                topping.name = name;
+                topping.price = price;
+                topping.stock_quantity = stock;
+            }
+        }
+
+        localStorage.setItem('toppings', JSON.stringify(toppings));
+        closeModal();
+        renderTable();
+    }
+
+    document.getElementById('adminLogoutBtn').addEventListener('click', (e) => {
+        e.preventDefault();
+        localStorage.removeItem('adminToken');
+        window.location.href = 'admin_login.html';
+    });
+
+    loadToppings();
+</script>
+</body>
+</html>
