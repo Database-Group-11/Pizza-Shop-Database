@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>菜单 - 披萨外卖系统</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<!-- 导航栏 -->
+<nav class="navbar">
+    <a href=" " class="navbar-brand">🍕 披萨外卖</a >
+    <div class="navbar-menu">
+        <a href="menu.html">菜单</a >
+        <a href="cart.html">购物车 <span id="cartCount" class="cart-badge">0</span></a >
+        <a href="order_history.html">我的订单</a >
+        <span id="userNameDisplay" style="color:#666;"></span>
+        <a href="#" id="logoutBtn">退出</a >
+    </div>
+</nav>
+
+<div class="container">
+    <!-- 分类筛选 -->
+    <div style="margin-bottom: 24px; display: flex; gap: 12px; flex-wrap: wrap;">
+        <button class="category-btn active" data-category="all">全部</button>
+        <button class="category-btn" data-category="经典">经典</button>
+        <button class="category-btn" data-category="素食">素食</button>
+        <button class="category-btn" data-category="肉类">肉类</button>
+        <button class="category-btn" data-category="海鲜">海鲜</button>
+    </div>
+
+    <!-- 披萨列表网格 -->
+    <div id="pizzaGrid" class="grid">
+        <!-- 动态加载披萨卡片 -->
+    </div>
+</div>
+
+<script src="js/main.js"></script>
+<script>
+    // 分类按钮样式
+    const style = document.createElement('style');
+    style.textContent = `
+            .category-btn {
+                padding: 8px 20px;
+                border: 1px solid #ddd;
+                background: white;
+                border-radius: 30px;
+                cursor: pointer;
+                font-size: 14px;
+                transition: all 0.2s;
+            }
+            .category-btn:hover {
+                border-color: #e74c3c;
+                color: #e74c3c;
+            }
+            .category-btn.active {
+                background: #e74c3c;
+                color: white;
+                border-color: #e74c3c;
+            }
+        `;
+    document.head.appendChild(style);
+</script>
+</body>
+</html>

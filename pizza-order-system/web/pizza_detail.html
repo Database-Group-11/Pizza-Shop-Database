@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>定制披萨 - 披萨外卖系统</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .pizza-info {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .pizza-info img {
+            width: 100%;
+            max-height: 300px;
+            object-fit: cover;
+            border-radius: 12px;
+        }
+        .pizza-info h2 {
+            margin: 16px 0 8px;
+            color: #333;
+        }
+        .pizza-info .price {
+            font-size: 28px;
+            font-weight: bold;
+            color: #e74c3c;
+        }
+        .toppings-section {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .toppings-section h3 {
+            margin-bottom: 16px;
+            color: #333;
+        }
+        .topping-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .topping-item:last-child {
+            border-bottom: none;
+        }
+        .topping-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .topping-info input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+        .topping-name {
+            font-weight: 500;
+        }
+        .topping-price {
+            color: #e74c3c;
+            font-size: 14px;
+            margin-left: 8px;
+        }
+        .topping-quantity {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .topping-quantity input {
+            width: 60px;
+            padding: 6px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            text-align: center;
+        }
+        .topping-quantity label {
+            font-size: 14px;
+            color: #666;
+        }
+        .bottom-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+        }
+        .total-price {
+            font-size: 24px;
+            font-weight: bold;
+            color: #e74c3c;
+        }
+        .total-price span {
+            font-size: 14px;
+            color: #666;
+        }
+        .quantity-control {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .quantity-control button {
+            width: 36px;
+            height: 36px;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 8px;
+            font-size: 18px;
+            cursor: pointer;
+        }
+        .quantity-control button:hover {
+            border-color: #e74c3c;
+            color: #e74c3c;
+        }
+        .quantity-control span {
+            font-size: 18px;
+            font-weight: 500;
+            min-width: 40px;
+            text-align: center;
+        }
+        .add-to-cart-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 12px 32px;
+            border-radius: 30px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .add-to-cart-btn:hover {
+            opacity: 0.9;
+        }
+        .back-btn {
+            background: #95a5a6;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-right: 12px;
+        }
+        body {
+            padding-bottom: 100px;
+        }
+        .stock-warning {
+            color: #e67e22;
+            font-size: 12px;
+            margin-left: 8px;
+        }
+    </style>
+</head>
+<body>
+<!-- 导航栏 -->
+<nav class="navbar">
+    <a href=" " class="navbar-brand">🍕 披萨外卖</a >
+    <div class="navbar-menu">
+        <a href="menu.html">菜单</a >
+        <a href="cart.html">购物车 <span id="cartCount" class="cart-badge">0</span></a >
+        <a href="order_history.html">我的订单</a >
+        <span id="userNameDisplay" style="color:#666;"></span>
+        <a href="#" id="logoutBtn">退出</a >
+    </div>
+</nav>
+
+<div class="container">
+    <!-- 披萨信息 -->
+    <div class="pizza-info" id="pizzaInfo">
+        <!-- 动态加载 -->
+    </div>
+
+    <!-- 配料选择 -->
+    <div class="toppings-section">
+        <h3>📋 选择配料</h3>
+        <div id="toppingsList">
+            <!-- 动态加载配料列表 -->
+        </div>
+    </div>
+</div>
+
+<!-- 底部操作栏 -->
+<div class="bottom-bar">
+    <div>
+        <button class="back-btn" onclick="history.back()">返回</button>
+    </div>
+    <div class="quantity-control">
+        <button onclick="changeQuantity(-1)">-</button>
+        <span id="quantity">1</span>
+        <button onclick="changeQuantity(1)">+</button>
+    </div>
+    <div>
+        <span class="total-price">¥<span id="totalPrice">0</span></span>
+        <button class="add-to-cart-btn" onclick="addCurrentToCart()">加入购物车</button>
+    </div>
+</div>
+
+<script src="js/main.js"></script>
+<script>
+    // 当前披萨
+    let currentPizza = null;
+    // 当前数量
+    let currentQuantity = 1;
+    // 选中的配料 { topping_id, name, price, quantity }
+    let selectedToppings = [];
+
+    // 页面加载
+    document.addEventListener('DOMContentLoaded', () => {
+        // 检查登录
+        const user = getCurrentUser();
+        if (!user) {
+            window.location.href = 'login.html';
+            return;
+        }
+
+        // 显示用户名
+        const userNameSpan = document.getElementById('userNameDisplay');
+        if (userNameSpan) {
+            userNameSpan.textContent = `欢迎，${user.name}`;
+        }
+
+        // 更新购物车数量
+        updateCartCountDisplay();
+
+        // 获取传递的披萨数据
+        const savedPizza = sessionStorage.getItem('selectedPizza');
+        if (savedPizza) {
+            currentPizza = JSON.parse(savedPizza);
+            renderPizzaInfo();
+        } else {
+            // 没有数据，返回菜单
+            alert('请先从菜单选择披萨');
+            window.location.href = 'menu.html';
+        }
+
+        // 加载配料列表
+        renderToppings();
+
+        // 计算总价
+        updateTotalPrice();
+    });
+
+    // 更新购物车数量显示
+    function updateCartCountDisplay() {
+        const cart = getCart();
+        const count = cart.reduce((sum, item) => sum + item.quantity, 0);
+        const cartCountSpan = document.getElementById('cartCount');
+        if (cartCountSpan) cartCountSpan.textContent = count;
+    }
+
+    // 渲染披萨信息
+    function renderPizzaInfo() {
+        const container = document.getElementById('pizzaInfo');
+        if (!container || !currentPizza) return;
+
+        container.innerHTML = `
+                < img src="${currentPizza.image}" alt="${currentPizza.name}">
+                <h2>${currentPizza.name}</h2>
+                <p style="color:#666; margin:8px 0;">${currentPizza.description}</p >
+                <div class="price">基础价：¥${currentPizza.base_price}</div>
+            `;
+    }
+
+    // 渲染配料列表
+    function renderToppings() {
+        const container = document.getElementById('toppingsList');
+        if (!container) return;
+
+        // 使用模拟数据或全局的 MOCK_TOPPINGS
+        const toppings = typeof MOCK_TOPPINGS !== 'undefined' ? MOCK_TOPPINGS : [
+            { topping_id: 1, name: '加芝士', price: 8, stock_quantity: 100 },
+            { topping_id: 2, name: '培根', price: 10, stock_quantity: 50 },
+            { topping_id: 3, name: '蘑菇', price: 6, stock_quantity: 80 },
+            { topping_id: 4, name: '青椒', price: 5, stock_quantity: 60 },
+            { topping_id: 5, name: '玉米', price: 5, stock_quantity: 70 },
+            { topping_id: 6, name: '洋葱', price: 4, stock_quantity: 90 }
+        ];
+
+        container.innerHTML = toppings.map(topping => `
+                <div class="topping-item" data-id="${topping.topping_id}">
+                    <div class="topping-info">
+                        <input type="checkbox" class="topping-checkbox"
+                               data-id="${topping.topping_id}"
+                               data-name="${topping.name}"
+                               data-price="${topping.price}">
+                        <span class="topping-name">${topping.name}</span>
+                        <span class="topping-price">+¥${topping.price}</span>
+                        ${topping.stock_quantity < 20 ? `<span class="stock-warning">⚠️ 仅剩${topping.stock_quantity}</span>` : ''}
+                    </div>
+                    <div class="topping-quantity">
+                        <label>数量:</label>
+                        <input type="number" class="topping-quantity-input"
+                               data-id="${topping.topping_id}"
+                               value="1" min="1" max="${Math.min(topping.stock_quantity, 10)}"
+                               style="width:60px;" disabled>
+                    </div>
+                </div>
+            `).join('');
+
+        // 绑定事件
+        document.querySelectorAll('.topping-checkbox').forEach(cb => {
+            cb.addEventListener('change', (e) => {
+                const id = parseInt(e.target.dataset.id);
+                const name = e.target.dataset.name;
+                const price = parseFloat(e.target.dataset.price);
+                const qtyInput = document.querySelector(`.topping-quantity-input[data-id="${id}"]`);
+
+                if (e.target.checked) {
+                    qtyInput.disabled = false;
+                    selectedToppings.push({ topping_id: id, name: name, price: price, quantity: 1 });
+                } else {
+                    qtyInput.disabled = true;
+                    qtyInput.value = 1;
+                    selectedToppings = selectedToppings.filter(t => t.topping_id !== id);
+                }
+                updateTotalPrice();
+            });
+        });
+
+        document.querySelectorAll('.topping-quantity-input').forEach(input => {
+            input.addEventListener('change', (e) => {
+                const id = parseInt(e.target.dataset.id);
+                const newQty = parseInt(e.target.value);
+                const topping = selectedToppings.find(t => t.topping_id === id);
+                if (topping) {
+                    topping.quantity = newQty;
+                    updateTotalPrice();
+                }
+            });
+        });
+    }
+
+    // 修改数量
+    function changeQuantity(delta) {
+        const newQty = currentQuantity + delta;
+        if (newQty >= 1 && newQty <= 99) {
+            currentQuantity = newQty;
+            document.getElementById('quantity').textContent = currentQuantity;
+            updateTotalPrice();
+        }
+    }
+
+    // 计算并更新总价
+    function updateTotalPrice() {
+        if (!currentPizza) return;
+
+        let baseTotal = currentPizza.base_price;
+        const toppingsTotal = selectedToppings.reduce((sum, t) => sum + (t.price * t.quantity), 0);
+        const total = (baseTotal + toppingsTotal) * currentQuantity;
+
+        document.getElementById('totalPrice').textContent = total;
+    }
+
+    // 加入购物车
+    function addCurrentToCart() {
+        if (!currentPizza) return;
+
+        // 深拷贝选中的配料
+        const toppingsCopy = selectedToppings.map(t => ({ ...t }));
+
+        // 调用全局的 addToCart 函数
+        if (typeof addToCart === 'function') {
+            addToCart(currentPizza, toppingsCopy, currentQuantity);
+        } else {
+            // 备用：手动添加到购物车
+            const cart = getCart();
+            const toppingsTotal = toppingsCopy.reduce((sum, t) => sum + (t.price * t.quantity), 0);
+            const itemTotal = (currentPizza.base_price + toppingsTotal) * currentQuantity;
+
+            const cartItem = {
+                id: Date.now(),
+                pizza_id: currentPizza.pizza_id,
+                pizza_name: currentPizza.name,
+                base_price: currentPizza.base_price,
+                toppings: toppingsCopy,
+                quantity: currentQuantity,
+                total: itemTotal
+            };
+            cart.push(cartItem);
+            saveCart(cart);
+            alert(`已添加 ${currentQuantity} 份 ${currentPizza.name} 到购物车`);
+        }
+
+        // 更新购物车角标
+        updateCartCountDisplay();
+
+        // 询问是否继续购物或去结算
+        if (confirm('已加入购物车！\n\n点击"确定"继续购物，点击"取消"去购物车结算')) {
+            window.location.href = 'menu.html';
+        } else {
+            window.location.href = 'cart.html';
+        }
+    }
+
+    // 退出登录
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            logout();
+        });
+    }
+
+    // 暴露函数给全局
+    window.changeQuantity = changeQuantity;
+    window.addCurrentToCart = addCurrentToCart;
+</script>
+</body>
+</html>
