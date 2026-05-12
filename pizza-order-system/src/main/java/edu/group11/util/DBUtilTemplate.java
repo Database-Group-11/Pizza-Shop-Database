@@ -1,15 +1,15 @@
 package main.java.edu.group11.util;
 
 import java.sql.*;
-import java.io.*;
 import java.nio.file.*;
-import java.util.*;
 
-public class DBUtil {
-    // 数据库配置参数（可根据实际情况修改）
+public class DBUtilTemplate {
+    // 数据库配置参数
     private static final String DRIVER = "com.mysql.cj.jdbc.Driver";
     private static final String URL = "jdbc:mysql://localhost:3306/pizza_order_system?useSSL=false&serverTimezone=Asia/Shanghai&characterEncoding=utf-8";
+    // TODO: 修改为你的MySQL用户名
     private static final String USERNAME = "root";
+    // TODO: 修改为你的MySQL密码
     private static final String PASSWORD = "123456";
 
     // ThreadLocal 用于事务管理（每个线程有自己的连接）
