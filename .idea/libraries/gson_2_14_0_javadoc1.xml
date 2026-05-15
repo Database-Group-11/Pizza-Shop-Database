@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="gson-2.14.0-javadoc1">
+    <CLASSES />
+    <JAVADOC>
+      <root url="jar://$PROJECT_DIR$/pizza-order-system/lib/gson-2.14.0-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES />
+  </library>
+</component>
