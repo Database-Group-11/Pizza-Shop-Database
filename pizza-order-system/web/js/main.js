@@ -70,14 +70,14 @@ function addToCart(pizza, selectedToppings, quantity) {
 
 // ========== 模拟数据 ==========
 const MOCK_PIZZAS = [
-    { pizza_id: 1, name: '经典玛格丽特', description: '新鲜番茄 + 罗勒叶 + 马苏里拉芝士', base_price: 39, category: '经典', image: 'https://picsum.photos/id/106/300/200' },
-    { pizza_id: 2, name: '超级至尊', description: '意式香肠 + 培根 + 牛肉粒 + 蘑菇', base_price: 59, category: '肉类', image: 'https://picsum.photos/id/108/300/200' },
-    { pizza_id: 3, name: '田园素食', description: '青椒 + 玉米 + 蘑菇 + 橄榄', base_price: 45, category: '素食', image: 'https://picsum.photos/id/127/300/200' },
-    { pizza_id: 4, name: '海鲜总汇', description: '鲜虾 + 鱿鱼 + 蟹柳 + 青椒', base_price: 69, category: '海鲜', image: 'https://picsum.photos/id/121/300/200' },
-    { pizza_id: 5, name: '夏威夷风情', description: '火腿 + 菠萝 + 芝士', base_price: 49, category: '经典', image: 'https://picsum.photos/id/155/300/200' },
-    { pizza_id: 6, name: '黑椒牛肉', description: '黑椒牛肉 + 洋葱 + 青椒', base_price: 55, category: '肉类', image: 'https://picsum.photos/id/124/300/200' },
-    { pizza_id: 7, name: '四重芝士', description: '四种芝士混合，浓郁拉丝', base_price: 52, category: '经典', image: 'https://picsum.photos/id/179/300/200' },
-    { pizza_id: 8, name: '蘑菇鸡肉', description: '鸡胸肉 + 蘑菇 + 玉米', base_price: 48, category: '肉类', image: 'https://picsum.photos/id/176/300/200' }
+    { pizza_id: 1, name: '经典玛格丽特', description: '新鲜番茄 + 罗勒叶 + 马苏里拉芝士', base_price: 39, category: '经典', image: '图片1' },
+    { pizza_id: 2, name: '超级至尊', description: '意式香肠 + 培根 + 牛肉粒 + 蘑菇', base_price: 59, category: '肉类', image: '图片2' },
+    { pizza_id: 3, name: '田园素食', description: '青椒 + 玉米 + 蘑菇 + 橄榄', base_price: 45, category: '素食', image: '图片3' },
+    { pizza_id: 4, name: '海鲜总汇', description: '鲜虾 + 鱿鱼 + 蟹柳 + 青椒', base_price: 69, category: '海鲜', image: '图片4' },
+    { pizza_id: 5, name: '夏威夷风情', description: '火腿 + 菠萝 + 芝士', base_price: 49, category: '经典', image: '图片5' },
+    { pizza_id: 6, name: '黑椒牛肉', description: '黑椒牛肉 + 洋葱 + 青椒', base_price: 55, category: '肉类', image: '图片6' },
+    { pizza_id: 7, name: '四重芝士', description: '四种芝士混合，浓郁拉丝', base_price: 52, category: '经典', image: '图片7' },
+    { pizza_id: 8, name: '蘑菇鸡肉', description: '鸡胸肉 + 蘑菇 + 玉米', base_price: 48, category: '肉类', image: '图片8' }
 ];
 
 const MOCK_TOPPINGS = [
