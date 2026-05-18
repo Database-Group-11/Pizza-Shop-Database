@@ -1,6 +1,8 @@
 package main.java.edu.group11.servlet;
 
 import main.java.edu.group11.dao.ReportDAO;
+import main.java.edu.group11.dao.ReportDAO.SalesReport;
+import main.java.edu.group11.dao.ReportDAO.PizzaSalesRanking;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import jakarta.servlet.ServletException;
@@ -94,36 +96,43 @@ public class ReportServlet extends HttpServlet {
         }
 
         String period = pathParts[2];
-        JSONObject result = new JSONObject();
+        SalesReport report = null;
 
         switch (period) {
             case "today":
-                Map<String, Object> todayReport = reportDAO.getTodaySalesReport();
-                result = convertToJSON(todayReport);
+                report = reportDAO.getTodaySalesReport();
                 break;
             case "weekly":
-                Map<String, Object> weeklyReport = reportDAO.getWeeklySalesReport();
-                result = convertToJSON(weeklyReport);
+                report = reportDAO.getWeeklySalesReport();
                 break;
             case "monthly":
-                Map<String, Object> monthlyReport = reportDAO.getMonthlySalesReport();
-                result = convertToJSON(monthlyReport);
+                report = reportDAO.getMonthlySalesReport();
                 break;
             case "range":
-                // GET /api/reports/sales/range?startDate=2024-01-01&endDate=2024-01-31
                 String startDate = request.getParameter("startDate");
                 String endDate = request.getParameter("endDate");
                 if (startDate == null || endDate == null) {
                     sendError(response, HttpServletResponse.SC_BAD_REQUEST, "请提供开始日期和结束日期");
                     return;
                 }
-                Map<String, Object> rangeReport = reportDAO.getSalesReportByDateRange(startDate, endDate);
-                result = convertToJSON(rangeReport);
+                report = reportDAO.getSalesReportByDateRange(startDate, endDate);
                 break;
             default:
                 sendError(response, HttpServletResponse.SC_BAD_REQUEST, "无效的销售报表类型");
                 return;
         }
+
+        if (report == null) {
+            sendError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "获取报表数据失败");
+            return;
+        }
+
+        JSONObject result = new JSONObject();
+        result.put("period", report.getPeriod());
+        result.put("totalOrders", report.getTotalOrders());
+        result.put("totalSales", report.getTotalSales());
+        result.put("averageOrderValue", report.getAverageOrderValue());
+        result.put("totalPizzasSold", report.getTotalPizzasSold());
 
         sendResponse(response, HttpServletResponse.SC_OK, result);
     }
@@ -132,19 +141,30 @@ public class ReportServlet extends HttpServlet {
     private void handleTopPizzasReport(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
         String limitParam = request.getParameter("limit");
-        int limit = 10; // 默认10个
+        int limit = 10;
 
         if (limitParam != null && !limitParam.isEmpty()) {
             try {
                 limit = Integer.parseInt(limitParam);
-                if (limit > 50) limit = 50; // 限制最大50
+                if (limit > 50) limit = 50;
             } catch (NumberFormatException e) {
                 // 使用默认值
             }
         }
 
-        List<Map<String, Object>> topPizzas = reportDAO.getTopSellingPizzas(limit);
-        JSONArray result = convertToJSONArray(topPizzas);
+        List<PizzaSalesRanking> topPizzas = reportDAO.getTopSellingPizzas(limit);
+        JSONArray result = new JSONArray();
+
+        for (PizzaSalesRanking pizza : topPizzas) {
+            JSONObject item = new JSONObject();
+            item.put("pizzaId", pizza.getPizzaId());
+            item.put("pizzaName", pizza.getPizzaName());
+            item.put("totalQuantity", pizza.getTotalQuantity());
+            item.put("totalRevenue", pizza.getTotalRevenue());
+            item.put("percentage", pizza.getPercentage());
+            result.put(item);
+        }
+
         sendResponse(response, HttpServletResponse.SC_OK, result);
     }
 
@@ -152,7 +172,22 @@ public class ReportServlet extends HttpServlet {
     private void handleCategorySalesReport(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
         Map<String, Object> categoryStats = reportDAO.getCategorySalesStatistics();
-        JSONObject result = convertToJSON(categoryStats);
+        JSONObject result = new JSONObject();
+
+        result.put("totalRevenue", categoryStats.get("totalRevenue"));
+
+        JSONArray categories = new JSONArray();
+        List<Map<String, Object>> categorySales = (List<Map<String, Object>>) categoryStats.get("categorySales");
+        for (Map<String, Object> cat : categorySales) {
+            JSONObject catObj = new JSONObject();
+            catObj.put("category", cat.get("category"));
+            catObj.put("orderCount", cat.get("orderCount"));
+            catObj.put("totalQuantity", cat.get("totalQuantity"));
+            catObj.put("totalRevenue", cat.get("totalRevenue"));
+            categories.put(catObj);
+        }
+        result.put("categorySales", categories);
+
         sendResponse(response, HttpServletResponse.SC_OK, result);
     }
 
@@ -160,7 +195,17 @@ public class ReportServlet extends HttpServlet {
     private void handleDailyTrendReport(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
         List<Map<String, Object>> dailyTrend = reportDAO.getDailySalesTrend();
-        JSONArray result = convertToJSONArray(dailyTrend);
+        JSONArray result = new JSONArray();
+
+        for (Map<String, Object> day : dailyTrend) {
+            JSONObject item = new JSONObject();
+            item.put("date", day.get("date"));
+            item.put("orderCount", day.get("orderCount"));
+            item.put("pizzasSold", day.get("pizzasSold"));
+            item.put("dailyRevenue", day.get("dailyRevenue"));
+            result.put(item);
+        }
+
         sendResponse(response, HttpServletResponse.SC_OK, result);
     }
 
@@ -168,7 +213,16 @@ public class ReportServlet extends HttpServlet {
     private void handleHourlyAnalysisReport(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
         List<Map<String, Object>> hourlyAnalysis = reportDAO.getHourlySalesAnalysis();
-        JSONArray result = convertToJSONArray(hourlyAnalysis);
+        JSONArray result = new JSONArray();
+
+        for (Map<String, Object> hour : hourlyAnalysis) {
+            JSONObject item = new JSONObject();
+            item.put("hour", hour.get("hour"));
+            item.put("orderCount", hour.get("orderCount"));
+            item.put("pizzasSold", hour.get("pizzasSold"));
+            result.put(item);
+        }
+
         sendResponse(response, HttpServletResponse.SC_OK, result);
     }
 
@@ -176,33 +230,27 @@ public class ReportServlet extends HttpServlet {
     private void handleMemberComparisonReport(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
         Map<String, Object> comparison = reportDAO.getMemberVsNonMemberSales();
-        JSONObject result = convertToJSON(comparison);
+        JSONObject result = new JSONObject();
+
+        if (comparison.containsKey("会员")) {
+            Map<String, Object> member = (Map<String, Object>) comparison.get("会员");
+            JSONObject memberObj = new JSONObject();
+            memberObj.put("orderCount", member.get("orderCount"));
+            memberObj.put("totalRevenue", member.get("totalRevenue"));
+            memberObj.put("averageOrderValue", member.get("averageOrderValue"));
+            result.put("members", memberObj);
+        }
+
+        if (comparison.containsKey("非会员")) {
+            Map<String, Object> nonMember = (Map<String, Object>) comparison.get("非会员");
+            JSONObject nonMemberObj = new JSONObject();
+            nonMemberObj.put("orderCount", nonMember.get("orderCount"));
+            nonMemberObj.put("totalRevenue", nonMember.get("totalRevenue"));
+            nonMemberObj.put("averageOrderValue", nonMember.get("averageOrderValue"));
+            result.put("nonMembers", nonMemberObj);
+        }
+
         sendResponse(response, HttpServletResponse.SC_OK, result);
-    }
-
-    // 转换Map为JSONObject
-    private JSONObject convertToJSON(Map<String, Object> map) {
-        JSONObject json = new JSONObject();
-        for (Map.Entry<String, Object> entry : map.entrySet()) {
-            Object value = entry.getValue();
-            if (value instanceof Map) {
-                json.put(entry.getKey(), convertToJSON((Map<String, Object>) value));
-            } else if (value instanceof List) {
-                json.put(entry.getKey(), convertToJSONArray((List<Map<String, Object>>) value));
-            } else {
-                json.put(entry.getKey(), value);
-            }
-        }
-        return json;
-    }
-
-    // 转换Map列表为JSONArray
-    private JSONArray convertToJSONArray(List<Map<String, Object>> list) {
-        JSONArray array = new JSONArray();
-        for (Map<String, Object> map : list) {
-            array.put(convertToJSON(map));
-        }
-        return array;
     }
 
     // 发送成功响应（JSONObject）

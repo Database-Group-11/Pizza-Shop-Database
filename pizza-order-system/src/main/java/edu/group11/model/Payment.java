@@ -9,6 +9,7 @@ public class Payment {
     private String status; // pending, completed, failed
     private double amount;
     private Date paymentTime;
+    private String transactionId;
 
     // Constructors
     public Payment() {}
@@ -27,8 +28,8 @@ public class Payment {
     public int getOrderId() { return orderId; }
     public void setOrderId(int orderId) { this.orderId = orderId; }
 
-    public String getMethod() { return method; }
-    public void setMethod(String method) { this.method = method; }
+    public String getPaymentMethod() { return method; }
+    public void setPaymentMethod(String method) { this.method = method; }
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
@@ -38,4 +39,7 @@ public class Payment {
 
     public Date getPaymentTime() { return paymentTime; }
     public void setPaymentTime(Date paymentTime) { this.paymentTime = paymentTime; }
+
+    public String getTransactionId() { return transactionId; }
+    public void setTransactionId(String transactionId) { this.transactionId = transactionId; }
 }

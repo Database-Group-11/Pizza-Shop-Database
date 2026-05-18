@@ -1,23 +1,27 @@
 -- ============================================
--- 顾客数据
+-- 测试数据
 -- ============================================
-INSERT INTO customers (name, phone, password, address) VALUES
-                                                           ('张三', '13800138000', '123456', '北京市海淀区'),
-                                                           ('李四', '13900139000', '123456', '上海市浦东新区'),
-                                                           ('王五', '13700137000', '123456', '广州市天河区');
 
 -- ============================================
--- 披萨数据
+-- 1. 顾客数据
 -- ============================================
-INSERT INTO pizzas (name, description, base_price, category) VALUES
-                                                                 ('Margherita', '经典番茄芝士披萨', 8.99, 'Classic'),
-                                                                 ('Pepperoni', '意式辣香肠披萨', 10.99, 'Classic'),
-                                                                 ('Hawaiian', '夏威夷火腿菠萝披萨', 11.99, 'Specialty'),
-                                                                 ('Meat Lovers', '肉食爱好者披萨', 13.99, 'Specialty'),
-                                                                 ('Veggie Supreme', '素食至尊披萨', 12.99, 'Vegetarian');
+INSERT INTO customers (name, phone, password, address, create_time, update_time) VALUES
+                                                                                     ('张三', '13800138000', '123456', '北京市海淀区', NOW(), NOW()),
+                                                                                     ('李四', '13900139000', '123456', '上海市浦东新区', NOW(), NOW()),
+                                                                                     ('王五', '13700137000', '123456', '广州市天河区', NOW(), NOW());
 
 -- ============================================
--- 配料数据
+-- 2. 披萨数据
+-- ============================================
+INSERT INTO pizzas (name, description, base_price, category, stock_quantity, reorder_level) VALUES
+                                                                                                ('Margherita', '经典番茄芝士披萨', 8.99, 'Classic', 100, 10),
+                                                                                                ('Pepperoni', '意式辣香肠披萨', 10.99, 'Classic', 80, 10),
+                                                                                                ('Hawaiian', '夏威夷火腿菠萝披萨', 11.99, 'Specialty', 60, 10),
+                                                                                                ('Meat Lovers', '肉食爱好者披萨', 13.99, 'Specialty', 50, 10),
+                                                                                                ('Veggie Supreme', '素食至尊披萨', 12.99, 'Vegetarian', 70, 10);
+
+-- ============================================
+-- 3. 配料数据
 -- ============================================
 INSERT INTO toppings (name, price, stock_quantity) VALUES
                                                        ('Extra Cheese', 1.50, 100),
@@ -29,38 +33,52 @@ INSERT INTO toppings (name, price, stock_quantity) VALUES
                                                        ('Olives', 1.00, 45);
 
 -- ============================================
--- 订单数据（示例）
+-- 4. 订单数据
 -- ============================================
-INSERT INTO orders (total_price, status, delivery_address, customer_id) VALUES
-                                                                            (12.49, 'completed', '北京市海淀区', 1),
-                                                                            (15.99, 'preparing', '上海市浦东新区', 2);
+INSERT INTO orders (order_no, order_time, total_amount, status, delivery_address, customer_id) VALUES
+                                                                                                   ('ORD20260507001', '2026-05-07 10:30:00', 12.49, 'completed', '北京市海淀区', 1),
+                                                                                                   ('ORD20260507002', '2026-05-07 11:45:00', 23.98, 'delivering', '上海市浦东新区', 2),
+                                                                                                   ('ORD20260508001', '2026-05-08 09:15:00', 10.99, 'pending', '广州市天河区', 3),
+                                                                                                   ('ORD20260508002', '2026-05-08 12:00:00', 15.99, 'paid', '北京市海淀区', 1),
+                                                                                                   ('ORD20260508003', '2026-05-08 18:30:00', 13.99, 'preparing', '上海市浦东新区', 2);
 
 -- ============================================
--- 订单项数据
+-- 5. 订单项数据
 -- ============================================
 INSERT INTO order_items (quantity, subtotal, order_id, pizza_id) VALUES
-                                                                     (1, 10.49, 1, 1),  -- 订单1：1个Margherita + Extra Cheese
-                                                                     (1, 13.99, 1, 4),  -- 订单1：1个Meat Lovers
-                                                                     (2, 23.98, 2, 3);  -- 订单2：2个Hawaiian
+                                                                     (1, 10.49, 1, 1),   -- 订单1：1个Margherita + Extra Cheese
+                                                                     (1, 13.99, 1, 4),   -- 订单1：1个Meat Lovers
+                                                                     (2, 23.98, 2, 3),   -- 订单2：2个Hawaiian
+                                                                     (1, 10.99, 3, 2),   -- 订单3：1个Pepperoni
+                                                                     (1, 15.99, 4, 5),   -- 订单4：1个Veggie Supreme
+                                                                     (1, 13.99, 5, 4);   -- 订单5：1个Meat Lovers
 
 -- ============================================
--- 订单配料关联数据
+-- 6. 订单配料关联数据
 -- ============================================
 INSERT INTO order_toppings (item_id, topping_id, quantity) VALUES
-                                                               (1, 1, 1),  -- 订单项1加Extra Cheese
-                                                               (2, 5, 1),  -- 订单项2加Bacon
-                                                               (3, 6, 2);  -- 订单项3加2份Pineapple
+                                                               (1, 1, 1),   -- 订单项1加Extra Cheese
+                                                               (2, 5, 1),   -- 订单项2加Bacon
+                                                               (3, 6, 2),   -- 订单项3加2份Pineapple
+                                                               (5, 3, 1),   -- 订单项5加Mushrooms
+                                                               (5, 4, 1);   -- 订单项5加Onions
 
 -- ============================================
--- 支付数据
+-- 7. 支付数据
 -- ============================================
-INSERT INTO payments (payment_method, amount, status, order_id) VALUES
-                                                                    ('Credit Card', 12.49, 'completed', 1),
-                                                                    ('Cash', 23.98, 'pending', 2);
+INSERT INTO payments (payment_method, amount, payment_time, status, order_id) VALUES
+                                                                                  ('Credit Card', 12.49, '2026-05-07 10:31:00', 'completed', 1),
+                                                                                  ('Cash', 23.98, '2026-05-07 11:46:00', 'completed', 2),
+                                                                                  ('Credit Card', 10.99, NULL, 'pending', 3),
+                                                                                  ('Alipay', 15.99, '2026-05-08 12:01:00', 'completed', 4),
+                                                                                  ('WeChat Pay', 13.99, NULL, 'pending', 5);
 
 -- ============================================
--- 配送数据
+-- 8. 配送数据
 -- ============================================
-INSERT INTO deliveries (rider_name, start_time, status, order_id) VALUES
-                                                                      ('骑手小王', '2026-05-07 10:00:00', 'delivered', 1),
-                                                                      ('骑手小李', NULL, 'preparing', 2);
+INSERT INTO deliveries (rider_name, start_time, arrive_time, status, order_id) VALUES
+                                                                                   ('骑手小王', '2026-05-07 10:35:00', '2026-05-07 11:00:00', 'delivered', 1),
+                                                                                   ('骑手小李', '2026-05-07 11:50:00', NULL, 'delivering', 2),
+                                                                                   (NULL, NULL, NULL, 'pending', 3),
+                                                                                   ('骑手小张', '2026-05-08 12:05:00', NULL, 'delivering', 4),
+                                                                                   (NULL, NULL, NULL, 'preparing', 5);

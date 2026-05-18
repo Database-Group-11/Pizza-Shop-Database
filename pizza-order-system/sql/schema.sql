@@ -39,8 +39,9 @@ CREATE TABLE toppings (
 -- ============================================
 CREATE TABLE orders (
                         order_id INT PRIMARY KEY AUTO_INCREMENT,
-                        order_date DATETIME DEFAULT CURRENT_TIMESTAMP,
-                        total_price DECIMAL(10, 2) NOT NULL,
+                        order_no VARCHAR(50),                    -- 加上订单号
+                        order_time DATETIME DEFAULT CURRENT_TIMESTAMP,  -- 改 order_date → order_time
+                        total_amount DECIMAL(10, 2) NOT NULL,    -- 改 total_price → total_amount
                         status VARCHAR(20) DEFAULT 'pending',
                         delivery_address VARCHAR(255),
                         customer_id INT NOT NULL,
@@ -97,3 +98,12 @@ CREATE TABLE deliveries (
                             order_id INT NOT NULL UNIQUE,
                             FOREIGN KEY (order_id) REFERENCES orders(order_id)
 );
+
+-- 给 pizzas 加上库存字段
+ALTER TABLE pizzas ADD COLUMN stock_quantity INT DEFAULT 0;
+ALTER TABLE pizzas ADD COLUMN reorder_level INT DEFAULT 10;
+ALTER TABLE pizzas ADD COLUMN last_restock_time TIMESTAMP NULL;
+
+-- 给 customers 加上时间字段
+ALTER TABLE customers ADD COLUMN create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+ALTER TABLE customers ADD COLUMN update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP;
