@@ -6,10 +6,11 @@ public class Payment {
     private int paymentId;
     private int orderId;
     private String method;
-    private String status; // pending, completed, failed
+    private String paymentStatus; // pending, completed, failed
     private double amount;
     private Date paymentTime;
     private String transactionId;
+    private Date createTime;
 
     // Constructors
     public Payment() {}
@@ -18,7 +19,7 @@ public class Payment {
         this.orderId = orderId;
         this.method = method;
         this.amount = amount;
-        this.status = "pending";
+        this.paymentStatus = "pending";
     }
 
     // Getters and Setters
@@ -31,8 +32,8 @@ public class Payment {
     public String getPaymentMethod() { return method; }
     public void setPaymentMethod(String method) { this.method = method; }
 
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
+    public String getPaymentStatus() { return paymentStatus; }
+    public void setPaymentStatus(String status) { this.paymentStatus = status; }
 
     public double getAmount() { return amount; }
     public void setAmount(double amount) { this.amount = amount; }
@@ -42,4 +43,7 @@ public class Payment {
 
     public String getTransactionId() { return transactionId; }
     public void setTransactionId(String transactionId) { this.transactionId = transactionId; }
+
+    public Date getCreateTime() { return createTime; }
+    public void setCreateTime(Date createTime) { this.createTime = createTime; }
 }

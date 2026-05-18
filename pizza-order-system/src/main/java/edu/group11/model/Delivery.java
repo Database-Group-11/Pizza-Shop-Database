@@ -33,77 +33,32 @@ public class Delivery {
         this.deliveryId = deliveryId;
     }
 
-    public int getOrderId() {
-        return orderId;
-    }
+    public int getOrderId() {return orderId;}
+    public void setOrderId(int orderId) {this.orderId = orderId;}
 
-    public void setOrderId(int orderId) {
-        this.orderId = orderId;
-    }
+    public String getRiderName() {return riderName;}
+    public void setRiderName(String riderName) {this.riderName = riderName;}
 
-    public String getRiderName() {
-        return riderName;
-    }
+    public String getRiderPhone() {return riderPhone;}
+    public void setRiderPhone(String riderPhone) {this.riderPhone = riderPhone;}
 
-    public void setRiderName(String riderName) {
-        this.riderName = riderName;
-    }
+    public Date getStartTime() {return startTime;}
+    public void setStartTime(Date startTime) {this.startTime = startTime;}
 
-    public String getRiderPhone() {
-        return riderPhone;
-    }
+    public Date getArriveTime() {return arriveTime;}
+    public void setArriveTime(Date arriveTime) {this.arriveTime = arriveTime;}
 
-    public void setRiderPhone(String riderPhone) {
-        this.riderPhone = riderPhone;
-    }
+    public String getStatus() {return status;}
+    public void setStatus(String status) {this.status = status;}
 
-    public Date getStartTime() {
-        return startTime;
-    }
+    public Date getEstimatedDeliveryTime() {return estimatedDeliveryTime;}
+    public void setEstimatedDeliveryTime(Date estimatedDeliveryTime) {this.estimatedDeliveryTime = estimatedDeliveryTime;}
 
-    public void setStartTime(Date startTime) {
-        this.startTime = startTime;
-    }
+    public Date getCreateTime() {return createTime;}
+    public void setCreateTime(Date createTime) {this.createTime = createTime;}
 
-    public Date getArriveTime() {
-        return arriveTime;
-    }
-
-    public void setArriveTime(Date arriveTime) {
-        this.arriveTime = arriveTime;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public Date getEstimatedDeliveryTime() {
-        return estimatedDeliveryTime;
-    }
-
-    public void setEstimatedDeliveryTime(Date estimatedDeliveryTime) {
-        this.estimatedDeliveryTime = estimatedDeliveryTime;
-    }
-
-    public Date getCreateTime() {
-        return createTime;
-    }
-
-    public void setCreateTime(Date createTime) {
-        this.createTime = createTime;
-    }
-
-    public Date getUpdateTime() {
-        return updateTime;
-    }
-
-    public void setUpdateTime(Date updateTime) {
-        this.updateTime = updateTime;
-    }
+    public Date getUpdateTime() {return updateTime;}
+    public void setUpdateTime(Date updateTime) {this.updateTime = updateTime;}
 
     // 辅助方法
     public boolean isDelivered() {
