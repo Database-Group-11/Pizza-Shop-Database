@@ -9,6 +9,7 @@ public class Customer {
     private String password;
     private String address;
     private Date createTime;
+    private Date updateTime;
 
     // 无参构造器
     public Customer() {}
@@ -68,5 +69,13 @@ public class Customer {
 
     public void setCreateTime(Date createTime) {
         this.createTime = createTime;
+    }
+
+    public Date getUpdateTime() {
+        return updateTime;
+    }
+
+    public void setUpdateTime(Date updateTime) {
+        this.updateTime = updateTime;
     }
 }

@@ -4,26 +4,29 @@ import main.java.edu.group11.model.Customer;
 import main.java.edu.group11.util.DBUtil;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class CustomerDAO {
 
-    // 用户注册
+    /**
+     * 用户注册
+     */
     public int register(Customer customer) {
-        String sql = "INSERT INTO customers (name, phone, password, address, create_time) VALUES (?, ?, ?, ?, NOW())";
+        String sql = "INSERT INTO customers (name, phone, password, address) VALUES (?, ?, ?, ?)";
         try (Connection conn = DBUtil.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+             PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
-            pstmt.setString(1, customer.getName());
-            pstmt.setString(2, customer.getPhone());
-            pstmt.setString(3, customer.getPassword());
-            pstmt.setString(4, customer.getAddress());
+            ps.setString(1, customer.getName());
+            ps.setString(2, customer.getPhone());
+            ps.setString(3, customer.getPassword());
+            ps.setString(4, customer.getAddress());
 
-            int affectedRows = pstmt.executeUpdate();
+            int affectedRows = ps.executeUpdate();
             if (affectedRows > 0) {
-                try (ResultSet rs = pstmt.getGeneratedKeys()) {
-                    if (rs.next()) {
-                        return rs.getInt(1);
-                    }
+                ResultSet rs = ps.getGeneratedKeys();
+                if (rs.next()) {
+                    return rs.getInt(1);
                 }
             }
         } catch (SQLException e) {
@@ -32,24 +35,20 @@ public class CustomerDAO {
         return -1;
     }
 
-    // 用户登录
+    /**
+     * 用户登录
+     */
     public Customer login(String phone, String password) {
-        String sql = "SELECT customer_id, name, phone, address FROM customers WHERE phone = ? AND password = ?";
+        String sql = "SELECT * FROM customers WHERE phone = ? AND password = ?";
         try (Connection conn = DBUtil.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            pstmt.setString(1, phone);
-            pstmt.setString(2, password);
+            ps.setString(1, phone);
+            ps.setString(2, password);
 
-            try (ResultSet rs = pstmt.executeQuery()) {
-                if (rs.next()) {
-                    Customer customer = new Customer();
-                    customer.setCustomerId(rs.getInt("customer_id"));
-                    customer.setName(rs.getString("name"));
-                    customer.setPhone(rs.getString("phone"));
-                    customer.setAddress(rs.getString("address"));
-                    return customer;
-                }
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return extractCustomerFromResultSet(rs);
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -57,23 +56,18 @@ public class CustomerDAO {
         return null;
     }
 
-    // 根据ID查询用户
+    /**
+     * 根据ID查询用户
+     */
     public Customer findById(int customerId) {
-        String sql = "SELECT customer_id, name, phone, address FROM customers WHERE customer_id = ?";
+        String sql = "SELECT * FROM customers WHERE customer_id = ?";
         try (Connection conn = DBUtil.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            pstmt.setInt(1, customerId);
-
-            try (ResultSet rs = pstmt.executeQuery()) {
-                if (rs.next()) {
-                    Customer customer = new Customer();
-                    customer.setCustomerId(rs.getInt("customer_id"));
-                    customer.setName(rs.getString("name"));
-                    customer.setPhone(rs.getString("phone"));
-                    customer.setAddress(rs.getString("address"));
-                    return customer;
-                }
+            ps.setInt(1, customerId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return extractCustomerFromResultSet(rs);
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -81,22 +75,54 @@ public class CustomerDAO {
         return null;
     }
 
-    // 检查手机号是否已存在
-    public boolean isPhoneExists(String phone) {
-        String sql = "SELECT COUNT(*) FROM customers WHERE phone = ?";
+    /**
+     * 根据手机号查询用户
+     */
+    public Customer findByPhone(String phone) {
+        String sql = "SELECT * FROM customers WHERE phone = ?";
         try (Connection conn = DBUtil.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            pstmt.setString(1, phone);
-
-            try (ResultSet rs = pstmt.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getInt(1) > 0;
-                }
+            ps.setString(1, phone);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return extractCustomerFromResultSet(rs);
             }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    /**
+     * 更新用户信息
+     */
+    public boolean update(Customer customer) {
+        String sql = "UPDATE customers SET name = ?, phone = ?, address = ? WHERE customer_id = ?";
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, customer.getName());
+            ps.setString(2, customer.getPhone());
+            ps.setString(3, customer.getAddress());
+            ps.setInt(4, customer.getCustomerId());
+
+            return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return false;
+    }
+
+    private Customer extractCustomerFromResultSet(ResultSet rs) throws SQLException {
+        Customer customer = new Customer();
+        customer.setCustomerId(rs.getInt("customer_id"));
+        customer.setName(rs.getString("name"));
+        customer.setPhone(rs.getString("phone"));
+        customer.setPassword(rs.getString("password"));
+        customer.setAddress(rs.getString("address"));
+        customer.setCreateTime(rs.getTimestamp("create_time"));
+        customer.setUpdateTime(rs.getTimestamp("update_time"));
+        return customer;
     }
 }
