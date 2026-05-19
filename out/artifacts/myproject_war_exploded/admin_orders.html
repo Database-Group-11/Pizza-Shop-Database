@@ -1,0 +1,91 @@
+<script src="js/main.js"></script>
+<script>
+    let allOrders = [];
+
+    function checkAdminAuth() {
+        const token = localStorage.getItem('adminToken');
+        if (!token) window.location.href = 'admin_login.html';
+    }
+    checkAdminAuth();
+
+    async function loadOrders() {
+        try {
+            const response = await fetch(`${API_BASE}/admin/orders`);
+            const result = await response.json();
+            if (result.code === 200) {
+                allOrders = result.data;
+                renderStats();
+                renderTable();
+            }
+        } catch (error) {
+            console.error('加载订单失败:', error);
+        }
+    }
+
+    function renderStats() {
+        const total = allOrders.length;
+        const pending = allOrders.filter(o => o.status === 'pending').length;
+        const delivering = allOrders.filter(o => o.status === 'delivering').length;
+        const completed = allOrders.filter(o => o.status === 'completed').length;
+
+        document.getElementById('totalOrders').innerText = total;
+        document.getElementById('pendingOrders').innerText = pending;
+        document.getElementById('deliveringOrders').innerText = delivering;
+        document.getElementById('completedOrders').innerText = completed;
+    }
+
+    function renderTable() {
+        const tbody = document.getElementById('ordersTableBody');
+        tbody.innerHTML = allOrders.map(order => `
+            <tr>
+                <td>${order.orderId}</td>
+                <td>${order.customerName || order.customerId}</td>
+                <td>¥${order.totalAmount}</td>
+                <td>
+                    <select class="status-select" data-id="${order.orderId}" onchange="updateStatus(${order.orderId}, this.value)">
+                        <option value="pending" ${order.status === 'pending' ? 'selected' : ''}>待支付</option>
+                        <option value="paid" ${order.status === 'paid' ? 'selected' : ''}>已支付</option>
+                        <option value="preparing" ${order.status === 'preparing' ? 'selected' : ''}>制作中</option>
+                        <option value="delivering" ${order.status === 'delivering' ? 'selected' : ''}>配送中</option>
+                        <option value="completed" ${order.status === 'completed' ? 'selected' : ''}>已完成</option>
+                        <option value="cancelled" ${order.status === 'cancelled' ? 'selected' : ''}>已取消</option>
+                    </select>
+                </td>
+                <td>${formatDate(order.orderTime)}</td>
+                <td><button class="btn-sm btn-primary-sm" onclick="viewOrder(${order.orderId})">查看</button></td>
+            </tr>
+        `).join('');
+    }
+
+    async function updateStatus(orderId, newStatus) {
+        try {
+            const response = await fetch(`${API_BASE}/admin/orders/${orderId}/status`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: newStatus })
+            });
+            const result = await response.json();
+            if (result.code === 200) {
+                alert('订单状态已更新');
+                loadOrders();
+            } else {
+                alert(result.message || '更新失败');
+            }
+        } catch (error) {
+            alert('网络错误');
+        }
+    }
+
+    function viewOrder(orderId) {
+        window.open(`order_status.html?order_id=${orderId}`, '_blank');
+    }
+
+    document.getElementById('adminLogoutBtn').addEventListener('click', (e) => {
+        e.preventDefault();
+        localStorage.removeItem('adminToken');
+        localStorage.removeItem('adminInfo');
+        window.location.href = 'admin_login.html';
+    });
+
+    loadOrders();
+</script>

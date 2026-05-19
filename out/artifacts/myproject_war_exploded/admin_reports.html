@@ -1,0 +1,99 @@
+<script>
+    function checkAdminAuth() {
+        const token = localStorage.getItem('adminToken');
+        if (!token) window.location.href = 'admin_login.html';
+    }
+    checkAdminAuth();
+
+    async function loadReport() {
+        try {
+            const response = await fetch(`${API_BASE}/admin/reports`);
+            const result = await response.json();
+            if (result.code === 200) {
+                const data = result.data;
+
+                // 更新统计卡片
+                document.getElementById('totalSales').innerText = data.totalRevenue || 0;
+                document.getElementById('totalOrderCount').innerText = data.totalOrders || 0;
+                document.getElementById('avgOrderAmount').innerText = data.avgOrderValue || 0;
+
+                // 畅销披萨 TOP 3
+                const topPizzas = data.topPizzas || [];
+                const topHtml = topPizzas.slice(0, 3).map((pizza, idx) =>
+                    `<li class="rank-${idx+1}"><span>${idx+1}. ${pizza.pizzaName}</span><span>销量: ${pizza.totalQuantity}</span></li>`
+                ).join('');
+                document.getElementById('topPizzas').innerHTML = topHtml || '<li>暂无数据</li>';
+
+                // 所有披萨销量
+                const allHtml = (data.topPizzas || []).map(pizza =>
+                    `<li><span>${pizza.pizzaName}</span><span>销量: ${pizza.totalQuantity}</span></li>`
+                ).join('');
+                document.getElementById('allPizzaSales').innerHTML = allHtml || '<li>暂无数据</li>';
+
+                // 近7天趋势（模拟柱状图，实际可用真实数据）
+                renderTrendChart(data.dailyOrders || []);
+            }
+        } catch (error) {
+            console.error('加载报表失败:', error);
+            // 显示模拟数据
+            document.getElementById('totalSales').innerText = '0';
+            document.getElementById('totalOrderCount').innerText = '0';
+            document.getElementById('avgOrderAmount').innerText = '0';
+            document.getElementById('topPizzas').innerHTML = '<li>暂无数据</li>';
+            document.getElementById('allPizzaSales').innerHTML = '<li>暂无数据</li>';
+        }
+    }
+
+    function renderTrendChart(dailyData) {
+        const container = document.getElementById('trendChart');
+        if (!container) return;
+
+        if (dailyData.length === 0) {
+            container.innerHTML = '<div style="text-align:center; padding:40px;">暂无数据</div>';
+            return;
+        }
+
+        const maxCount = Math.max(...dailyData.map(d => d.count), 1);
+        const days = ['一', '二', '三', '四', '五', '六', '日'];
+
+        container.innerHTML = dailyData.map((day, i) => {
+            const height = (day.count / maxCount) * 120 + 20;
+            return `
+                <div style="flex:1; text-align:center;">
+                    <div style="height:${height}px; background:#e74c3c; border-radius:6px; width:100%;"></div>
+                    <div style="margin-top:8px;">${days[i] || day.date}</div>
+                    <div style="font-size:12px; color:#666;">${day.count}单</div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function exportReport() {
+        // 获取当前统计数据并导出
+        const report = {
+            exportTime: new Date().toISOString(),
+            totalSales: document.getElementById('totalSales').innerText,
+            totalOrders: document.getElementById('totalOrderCount').innerText,
+            avgOrderAmount: document.getElementById('avgOrderAmount').innerText
+        };
+
+        const dataStr = JSON.stringify(report, null, 2);
+        const blob = new Blob([dataStr], {type: 'application/json'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `report_${new Date().toISOString().slice(0,19)}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+        alert('报表已导出');
+    }
+
+    document.getElementById('adminLogoutBtn').addEventListener('click', (e) => {
+        e.preventDefault();
+        localStorage.removeItem('adminToken');
+        localStorage.removeItem('adminInfo');
+        window.location.href = 'admin_login.html';
+    });
+
+    loadReport();
+</script>

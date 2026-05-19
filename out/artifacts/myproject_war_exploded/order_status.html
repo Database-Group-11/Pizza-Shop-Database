@@ -1,0 +1,273 @@
+<script src="js/main.js"></script>
+<script>
+    let currentOrder = null;
+    let pollingInterval = null;
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const user = getCurrentUser();
+        if (!user) {
+            window.location.href = 'login.html';
+            return;
+        }
+
+        const userNameSpan = document.getElementById('userNameDisplay');
+        if (userNameSpan) {
+            userNameSpan.textContent = `欢迎，${user.name}`;
+        }
+
+        updateCartCount();
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const orderId = urlParams.get('order_id');
+        if (!orderId) {
+            alert('未找到订单');
+            window.location.href = 'order_history.html';
+            return;
+        }
+
+        loadOrderDetail(orderId);
+
+        const logoutBtn = document.getElementById('logoutBtn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                stopPolling();
+                logout();
+            });
+        }
+    });
+
+    function updateCartCount() {
+        const cart = getCart();
+        const count = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
+        const span = document.getElementById('cartCount');
+        if (span) span.textContent = count;
+    }
+
+    async function loadOrderDetail(orderId) {
+        try {
+            const response = await fetch(`${API_BASE}/orders/${orderId}`);
+            const result = await response.json();
+            if (result.code === 200) {
+                currentOrder = result.data;
+                renderOrderDetail(currentOrder);
+                startPolling(orderId);
+            } else {
+                alert(result.message || '订单不存在');
+                window.location.href = 'order_history.html';
+            }
+        } catch (error) {
+            console.error('加载订单失败:', error);
+            alert('网络错误，请稍后重试');
+        }
+    }
+
+    function renderOrderDetail(order) {
+        const container = document.getElementById('orderContent');
+        if (!container) return;
+
+        const statusText = getStatusText(order.status);
+        const statusClass = getStatusClass(order.status);
+
+        // 商品列表
+        let itemsHtml = '';
+        if (order.items && order.items.length > 0) {
+            for (let i = 0; i < order.items.length; i++) {
+                const item = order.items[i];
+                let toppingsHtml = '';
+                if (item.toppings && item.toppings.length > 0) {
+                    for (let j = 0; j < item.toppings.length; j++) {
+                        const t = item.toppings[j];
+                        toppingsHtml += `<span style="background:#f0f0f0; padding:2px 8px; border-radius:12px; margin-right:6px; font-size:12px;">${t.name} x${t.quantity}</span>`;
+                    }
+                }
+                itemsHtml += `
+                    <div class="item-row">
+                        <div class="item-name">
+                            🍕 ${item.pizzaName}
+                            <div class="item-toppings">${toppingsHtml || '无配料'}</div>
+                        </div>
+                        <div class="item-qty">x${item.quantity}</div>
+                        <div class="item-price">¥${item.subtotal || item.unitPrice * item.quantity}</div>
+                    </div>
+                `;
+            }
+        }
+
+        // 按钮区域
+        let buttonsHtml = `<button class="btn-back" onclick="goToOrderHistory()">返回订单列表</button>`;
+        if (order.status === 'pending') {
+            buttonsHtml += `<button class="btn-pay" onclick="payOrder(${order.orderId})">立即支付</button>`;
+            buttonsHtml += `<button class="btn-cancel" onclick="cancelOrder(${order.orderId})">取消订单</button>`;
+        }
+        if (order.status === 'completed') {
+            buttonsHtml += `<button class="btn-pay" onclick="reorder(${order.orderId})">再来一单</button>`;
+        }
+
+        // 进度条
+        const stepsHtml = (order.status !== 'completed' && order.status !== 'cancelled') ? `
+            <div class="progress-steps">
+                ${['提交订单', '确认支付', '配送中', '已完成'].map((label, idx) => `<div class="step" data-step="${idx}"><div class="step-circle">${idx === 0 ? '📝' : idx === 1 ? '💳' : idx === 2 ? '🚚' : '✅'}</div><div class="step-label">${label}</div></div>`).join('')}
+            </div>
+        ` : '';
+
+        // 支付信息
+        const paymentHtml = order.payment ? `
+            <div class="info-row">
+                <div class="info-label">支付方式</div>
+                <div class="info-value">${order.payment.paymentMethod || order.paymentMethod}</div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">支付状态</div>
+                <div class="info-value">${order.payment.status === 'completed' ? '已支付' : order.payment.status}</div>
+            </div>
+        ` : `
+            <div class="info-row">
+                <div class="info-label">支付方式</div>
+                <div class="info-value">${order.paymentMethod || '待选择'}</div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">支付状态</div>
+                <div class="info-value">${order.payment ? order.payment.status : '待支付'}</div>
+            </div>
+        `;
+
+        // 配送信息
+        const deliveryHtml = order.delivery ? `
+            <div class="delivery-info" style="background:#f8f9fa; border-radius:12px; padding:16px; margin-top:16px;">
+                <div class="info-row"><div class="info-label">骑手姓名</div><div class="info-value">${order.delivery.riderName || '待分配'}</div></div>
+                <div class="info-row"><div class="info-label">骑手电话</div><div class="info-value">${order.delivery.riderPhone || '--'}</div></div>
+                <div class="info-row"><div class="info-label">开始配送</div><div class="info-value">${order.delivery.startTime ? formatDate(order.delivery.startTime) : '--'}</div></div>
+                <div class="info-row"><div class="info-label">预计送达</div><div class="info-value">${order.delivery.estimatedDeliveryTime ? formatDate(order.delivery.estimatedDeliveryTime) : '--'}</div></div>
+            </div>
+        ` : '';
+
+        container.innerHTML = `
+            <div class="order-card">
+                <div class="order-header">
+                    <span class="order-id">订单号：${order.orderId}</span>
+                    <span class="order-status ${statusClass}">${statusText}</span>
+                </div>
+                ${stepsHtml}
+                <div class="items-list"><h4 style="margin-bottom:12px;">商品清单</h4>${itemsHtml}</div>
+                <div class="info-row"><div class="info-label">下单时间</div><div class="info-value">${formatDate(order.orderTime)}</div></div>
+                <div class="info-row"><div class="info-label">配送地址</div><div class="info-value">${order.deliveryAddress}</div></div>
+                ${paymentHtml}
+                <div class="info-row"><div class="info-label">订单总额</div><div class="info-value" style="font-size:20px; font-weight:bold; color:#e74c3c;">¥${order.totalAmount}</div></div>
+                ${deliveryHtml}
+                <div class="action-buttons">${buttonsHtml}</div>
+            </div>
+        `;
+
+        if (order.status !== 'completed' && order.status !== 'cancelled') {
+            updateProgressBar(order.status);
+        }
+    }
+
+    function updateProgressBar(status) {
+        const stepMap = { 'pending': 0, 'paid': 1, 'preparing': 1, 'delivering': 2, 'completed': 3 };
+        let stepIndex = stepMap[status] || 0;
+        const steps = document.querySelectorAll('.step');
+        steps.forEach((step, idx) => {
+            step.classList.remove('active', 'completed');
+            if (idx < stepIndex) step.classList.add('completed');
+            else if (idx === stepIndex) step.classList.add('active');
+        });
+    }
+
+    function goToOrderHistory() {
+        window.location.href = 'order_history.html';
+    }
+
+    async function payOrder(orderId) {
+        try {
+            const response = await fetch(`${API_BASE}/payments`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ orderId, method: 'Credit Card' })
+            });
+            const result = await response.json();
+            if (result.code === 200) {
+                alert(`订单 ${orderId} 支付成功`);
+                loadOrderDetail(orderId);
+            } else {
+                alert(result.message || '支付失败');
+            }
+        } catch (error) {
+            alert('支付失败，请稍后重试');
+        }
+    }
+
+    async function cancelOrder(orderId) {
+        if (!confirm('确定要取消这个订单吗？')) return;
+
+        try {
+            const response = await fetch(`${API_BASE}/orders/${orderId}/cancel`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' }
+            });
+            const result = await response.json();
+            if (result.code === 200) {
+                alert('订单已取消');
+                loadOrderDetail(orderId);
+            } else {
+                alert(result.message || '取消失败');
+            }
+        } catch (error) {
+            alert('取消失败，请稍后重试');
+        }
+    }
+
+    function reorder(orderId) {
+        // 从当前订单获取商品信息，添加到购物车
+        if (currentOrder && currentOrder.items) {
+            const cart = getCart();
+            for (const item of currentOrder.items) {
+                const toppings = (item.toppings || []).map(t => ({
+                    toppingId: t.toppingId,
+                    name: t.name,
+                    price: t.price,
+                    quantity: t.quantity
+                }));
+                cart.push({
+                    id: Date.now() + Math.random(),
+                    pizzaId: item.pizzaId,
+                    pizzaName: item.pizzaName,
+                    basePrice: item.unitPrice,
+                    toppings: toppings,
+                    quantity: item.quantity,
+                    total: item.subtotal
+                });
+            }
+            saveCart(cart);
+            alert('已添加到购物车');
+            window.location.href = 'cart.html';
+        } else {
+            alert('无法获取订单信息');
+        }
+    }
+
+    function startPolling(orderId) {
+        stopPolling();
+        // 每5秒轮询一次订单状态
+        pollingInterval = setInterval(() => {
+            if (currentOrder && (currentOrder.status === 'pending' || currentOrder.status === 'paid' || currentOrder.status === 'preparing' || currentOrder.status === 'delivering')) {
+                loadOrderDetail(orderId);
+            } else {
+                stopPolling();
+            }
+        }, 5000);
+    }
+
+    function stopPolling() {
+        if (pollingInterval) {
+            clearInterval(pollingInterval);
+            pollingInterval = null;
+        }
+    }
+
+    window.payOrder = payOrder;
+    window.cancelOrder = cancelOrder;
+    window.reorder = reorder;
+    window.goToOrderHistory = goToOrderHistory;
+</script>

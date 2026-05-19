@@ -1,0 +1,231 @@
+<script src="js/main.js"></script>
+<script>
+    let cartItems = [];
+    let grandTotal = 0;
+    let isEditingAddress = false;
+    let selectedPayment = '微信支付';
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const user = getCurrentUser();
+        if (!user) {
+            window.location.href = 'login.html';
+            return;
+        }
+
+        const userNameSpan = document.getElementById('userNameDisplay');
+        if (userNameSpan) {
+            userNameSpan.textContent = `欢迎，${user.name}`;
+        }
+
+        loadCartData();
+        updateCartCountDisplay();
+        initPaymentMethods();
+
+        const logoutBtn = document.getElementById('logoutBtn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                logout();
+            });
+        }
+
+        const submitBtn = document.getElementById('submitOrderBtn');
+        if (submitBtn) {
+            submitBtn.addEventListener('click', submitOrder);
+        }
+    });
+
+    function loadCartData() {
+        cartItems = getCart();
+        if (cartItems.length === 0) {
+            alert('购物车是空的，请先添加商品');
+            window.location.href = 'menu.html';
+            return;
+        }
+        calculateGrandTotal();
+        renderOrderItems();
+        renderAddressSection();
+    }
+
+    function calculateGrandTotal() {
+        grandTotal = cartItems.reduce((sum, item) => sum + item.total, 0);
+    }
+
+    function renderOrderItems() {
+        const container = document.getElementById('orderItemsList');
+        if (!container) return;
+
+        container.innerHTML = cartItems.map(item => {
+            const toppingsText = (item.toppings || []).map(t => `${t.name} x${t.quantity}`).join(', ');
+            return `
+                <div class="order-item">
+                    <div class="order-item-info">
+                        <div class="order-item-name">🍕 ${item.pizzaName}</div>
+                        ${toppingsText ? `<div class="order-item-toppings">${toppingsText}</div>` : ''}
+                    </div>
+                    <div class="order-item-qty">x${item.quantity}</div>
+                    <div class="order-item-price">¥${item.total}</div>
+                </div>
+            `;
+        }).join('');
+
+        const summaryHtml = `
+            <div class="summary-row">
+                <span>商品金额</span>
+                <span class="price">¥${grandTotal}</span>
+            </div>
+            <div class="summary-row">
+                <span>配送费</span>
+                <span class="price">¥0</span>
+            </div>
+            <div class="summary-row total">
+                <span>总计</span>
+                <span class="price">¥${grandTotal}</span>
+            </div>
+        `;
+        document.getElementById('orderSummary').innerHTML = summaryHtml;
+    }
+
+    function renderAddressSection() {
+        const user = getCurrentUser();
+        const container = document.getElementById('addressSection');
+        if (!container || !user) return;
+
+        const address = user.address || '请填写配送地址';
+        const phone = user.phone || '';
+        const name = user.name || '';
+
+        container.innerHTML = `
+            <div id="addressDisplay" class="address-display">
+                <div class="address-box">
+                    <div class="address-info">
+                        <p class="name-phone">${name} ${phone}</p >
+                        <p>${address}</p >
+                    </div>
+                    <button class="edit-address-btn" onclick="toggleAddressEdit()">修改</button>
+                </div>
+            </div>
+            <div id="addressEdit" class="edit-mode">
+                <input type="text" id="newAddress" class="address-input" placeholder="请输入详细地址" value="${address === '请填写配送地址' ? '' : address}">
+                <div style="display: flex; gap: 12px; margin-top: 12px;">
+                    <button class="edit-address-btn" onclick="saveAddress()">保存</button>
+                    <button class="edit-address-btn" onclick="toggleAddressEdit()">取消</button>
+                </div>
+            </div>
+        `;
+    }
+
+    function toggleAddressEdit() {
+        isEditingAddress = !isEditingAddress;
+        const displayDiv = document.getElementById('addressDisplay');
+        const editDiv = document.getElementById('addressEdit');
+        if (displayDiv && editDiv) {
+            displayDiv.style.display = isEditingAddress ? 'none' : 'block';
+            editDiv.style.display = isEditingAddress ? 'block' : 'none';
+        }
+    }
+
+    function saveAddress() {
+        const newAddress = document.getElementById('newAddress').value;
+        if (!newAddress.trim()) {
+            alert('请填写配送地址');
+            return;
+        }
+
+        const user = getCurrentUser();
+        if (user) {
+            user.address = newAddress;
+            setCurrentUser(user);
+        }
+
+        toggleAddressEdit();
+        renderAddressSection();
+    }
+
+    function initPaymentMethods() {
+        const options = document.querySelectorAll('.payment-option');
+        options.forEach(option => {
+            option.addEventListener('click', () => {
+                options.forEach(opt => opt.classList.remove('selected'));
+                option.classList.add('selected');
+                const radio = option.querySelector('input[type="radio"]');
+                if (radio) {
+                    radio.checked = true;
+                    selectedPayment = radio.value;
+                }
+            });
+        });
+
+        const selectedRadio = document.querySelector('input[name="payment"]:checked');
+        if (selectedRadio) {
+            selectedPayment = selectedRadio.value;
+        }
+    }
+
+    function updateCartCountDisplay() {
+        const count = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+        const cartCountSpan = document.getElementById('cartCount');
+        if (cartCountSpan) cartCountSpan.textContent = count;
+    }
+
+    function goBackToCart() {
+        window.location.href = 'cart.html';
+    }
+
+    async function submitOrder() {
+        const user = getCurrentUser();
+        if (!user) {
+            alert('请先登录');
+            window.location.href = 'login.html';
+            return;
+        }
+
+        if (!user.address || user.address === '请填写配送地址') {
+            alert('请填写配送地址');
+            toggleAddressEdit();
+            return;
+        }
+
+        if (cartItems.length === 0) {
+            alert('购物车为空');
+            return;
+        }
+
+        // 构建订单数据（适配文档格式）
+        const orderData = {
+            customerId: user.customerId,
+            deliveryAddress: user.address,
+            paymentMethod: selectedPayment === '微信支付' ? 'WeChat' : selectedPayment === '支付宝' ? 'Alipay' : 'Cash',
+            totalAmount: grandTotal,
+            items: cartItems.map(item => ({
+                pizzaId: item.pizzaId,
+                quantity: item.quantity,
+                toppingIds: (item.toppings || []).map(t => t.toppingId)
+            }))
+        };
+
+        try {
+            const response = await fetch(`${API_BASE}/orders`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(orderData)
+            });
+            const result = await response.json();
+            if (result.code === 200) {
+                // 清空购物车
+                saveCart([]);
+                alert(`订单创建成功！订单号：${result.data.orderId}`);
+                window.location.href = `order_status.html?order_id=${result.data.orderId}`;
+            } else {
+                alert(result.message || '下单失败，请重试');
+            }
+        } catch (error) {
+            console.error('下单失败:', error);
+            alert('网络错误，请稍后重试');
+        }
+    }
+
+    window.toggleAddressEdit = toggleAddressEdit;
+    window.saveAddress = saveAddress;
+    window.goBackToCart = goBackToCart;
+</script>

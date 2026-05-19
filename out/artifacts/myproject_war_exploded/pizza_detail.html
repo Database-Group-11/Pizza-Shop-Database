@@ -1,0 +1,189 @@
+<script src="js/main.js"></script>
+<script>
+    let currentPizza = null;
+    let currentQuantity = 1;
+    let selectedToppings = [];
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        const user = getCurrentUser();
+        if (!user) {
+            window.location.href = 'login.html';
+            return;
+        }
+
+        const userNameSpan = document.getElementById('userNameDisplay');
+        if (userNameSpan) {
+            userNameSpan.textContent = `欢迎，${user.name}`;
+        }
+
+        updateCartCount();
+
+        // 获取披萨ID
+        const urlParams = new URLSearchParams(window.location.search);
+        const pizzaId = urlParams.get('pizza_id');
+
+        if (!pizzaId) {
+            alert('请先从菜单选择披萨');
+            window.location.href = 'menu.html';
+            return;
+        }
+
+        await loadPizzaDetail(pizzaId);
+        await loadToppings();
+
+        const logoutBtn = document.getElementById('logoutBtn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                logout();
+            });
+        }
+    });
+
+    function updateCartCount() {
+        const cart = getCart();
+        const count = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
+        const span = document.getElementById('cartCount');
+        if (span) span.textContent = count;
+    }
+
+    async function loadPizzaDetail(pizzaId) {
+        try {
+            const response = await fetch(`${API_BASE}/pizzas`);
+            const result = await response.json();
+            if (result.code === 200) {
+                currentPizza = result.data.find(p => p.pizzaId == pizzaId);
+                if (currentPizza) {
+                    renderPizzaInfo();
+                } else {
+                    alert('披萨不存在');
+                    window.location.href = 'menu.html';
+                }
+            }
+        } catch (error) {
+            console.error('加载披萨失败:', error);
+        }
+    }
+
+    function renderPizzaInfo() {
+        const container = document.getElementById('pizzaInfo');
+        if (!container || !currentPizza) return;
+
+        container.innerHTML = `
+            < img src="${currentPizza.image || 'https://picsum.photos/id/106/300/200'}" alt="${currentPizza.name}">
+            <h2>${currentPizza.name}</h2>
+            <p style="color:#666; margin:8px 0;">${currentPizza.description || ''}</p >
+            <div class="price">基础价：¥${currentPizza.basePrice}</div>
+        `;
+    }
+
+    async function loadToppings() {
+        try {
+            const response = await fetch(`${API_BASE}/toppings`);
+            const result = await response.json();
+            if (result.code === 200) {
+                renderToppings(result.data);
+            }
+        } catch (error) {
+            console.error('加载配料失败:', error);
+        }
+    }
+
+    function renderToppings(toppings) {
+        const container = document.getElementById('toppingsList');
+        if (!container) return;
+
+        container.innerHTML = toppings.map(topping => `
+            <div class="topping-item" data-id="${topping.toppingId}">
+                <div class="topping-info">
+                    <input type="checkbox" class="topping-checkbox"
+                           data-id="${topping.toppingId}"
+                           data-name="${topping.name}"
+                           data-price="${topping.price}">
+                    <span class="topping-name">${topping.name}</span>
+                    <span class="topping-price">+¥${topping.price}</span>
+                    ${topping.stockQuantity < 20 ? `<span class="stock-warning">⚠️ 仅剩${topping.stockQuantity}</span>` : ''}
+                </div>
+                <div class="topping-quantity">
+                    <label>数量:</label>
+                    <input type="number" class="topping-quantity-input"
+                           data-id="${topping.toppingId}"
+                           value="1" min="1" max="${Math.min(topping.stockQuantity, 10)}"
+                           style="width:60px;" disabled>
+                </div>
+            </div>
+        `).join('');
+
+        // 绑定事件
+        document.querySelectorAll('.topping-checkbox').forEach(cb => {
+            cb.addEventListener('change', (e) => {
+                const id = parseInt(e.target.dataset.id);
+                const name = e.target.dataset.name;
+                const price = parseFloat(e.target.dataset.price);
+                const qtyInput = document.querySelector(`.topping-quantity-input[data-id="${id}"]`);
+
+                if (e.target.checked) {
+                    qtyInput.disabled = false;
+                    selectedToppings.push({ toppingId: id, name: name, price: price, quantity: 1 });
+                } else {
+                    qtyInput.disabled = true;
+                    qtyInput.value = 1;
+                    selectedToppings = selectedToppings.filter(t => t.toppingId !== id);
+                }
+                updateTotalPrice();
+            });
+        });
+
+        document.querySelectorAll('.topping-quantity-input').forEach(input => {
+            input.addEventListener('change', (e) => {
+                const id = parseInt(e.target.dataset.id);
+                const newQty = parseInt(e.target.value);
+                const topping = selectedToppings.find(t => t.toppingId === id);
+                if (topping) {
+                    topping.quantity = newQty;
+                    updateTotalPrice();
+                }
+            });
+        });
+
+        updateTotalPrice();
+    }
+
+    function changeQuantity(delta) {
+        const newQty = currentQuantity + delta;
+        if (newQty >= 1 && newQty <= 99) {
+            currentQuantity = newQty;
+            document.getElementById('quantity').textContent = currentQuantity;
+            updateTotalPrice();
+        }
+    }
+
+    function updateTotalPrice() {
+        if (!currentPizza) return;
+
+        let baseTotal = currentPizza.basePrice;
+        const toppingsTotal = selectedToppings.reduce((sum, t) => sum + (t.price * t.quantity), 0);
+        const total = (baseTotal + toppingsTotal) * currentQuantity;
+
+        document.getElementById('totalPrice').textContent = total;
+    }
+
+    function addCurrentToCart() {
+        if (!currentPizza) return;
+
+        const toppingsCopy = selectedToppings.map(t => ({ ...t }));
+        addToCart(currentPizza, toppingsCopy, currentQuantity);
+
+        updateCartCount();
+
+        if (confirm('已加入购物车！\n\n点击"确定"继续购物，点击"取消"去购物车结算')) {
+            window.location.href = 'menu.html';
+        } else {
+            window.location.href = 'cart.html';
+        }
+    }
+
+    // 暴露给全局
+    window.changeQuantity = changeQuantity;
+    window.addCurrentToCart = addCurrentToCart;
+</script>

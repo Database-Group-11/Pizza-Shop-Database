@@ -1,0 +1,145 @@
+<script src="js/main.js"></script>
+<script>
+    let currentCart = [];
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const user = getCurrentUser();
+        if (!user) {
+            window.location.href = 'login.html';
+            return;
+        }
+
+        const userNameSpan = document.getElementById('userNameDisplay');
+        if (userNameSpan) {
+            userNameSpan.textContent = `欢迎，${user.name}`;
+        }
+
+        loadCart();
+
+        const logoutBtn = document.getElementById('logoutBtn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                logout();
+            });
+        }
+    });
+
+    function loadCart() {
+        currentCart = getCart();
+        renderCart();
+        updateCartCountDisplay();
+    }
+
+    function updateCartCountDisplay() {
+        const count = currentCart.reduce((sum, item) => sum + (item.quantity || 1), 0);
+        const cartCountSpan = document.getElementById('cartCount');
+        if (cartCountSpan) cartCountSpan.textContent = count;
+    }
+
+    function renderCart() {
+        const container = document.getElementById('cartContent');
+        if (!container) return;
+
+        if (currentCart.length === 0) {
+            container.innerHTML = `
+                <div class="empty-cart">
+                    <h3>🛒 购物车还是空的</h3>
+                    <p style="color:#999; margin-bottom: 20px;">快去添加一些美味的披萨吧！</p >
+                    <a href=" ">🍕 去点餐</a >
+                </div>
+            `;
+            return;
+        }
+
+        let grandTotal = 0;
+
+        const itemsHtml = currentCart.map((item, index) => {
+            const toppingsTotal = (item.toppings || []).reduce((sum, t) => sum + (t.price * t.quantity), 0);
+            const unitTotal = item.basePrice + toppingsTotal;
+            const itemTotal = unitTotal * item.quantity;
+            grandTotal += itemTotal;
+
+            const toppingsHtml = (item.toppings || []).map(t =>
+                `<span>${t.name} x${t.quantity} (+¥${t.price * t.quantity})</span>`
+            ).join('');
+
+            return `
+                <div class="cart-item" data-index="${index}">
+                    <div class="cart-item-info">
+                        <h4>🍕 ${item.pizzaName}</h4>
+                        <div class="cart-item-toppings">
+                            ${toppingsHtml || '<span>无配料</span>'}
+                        </div>
+                        <div class="unit-price">单价：¥${unitTotal}</div>
+                    </div>
+                    <div class="cart-item-actions">
+                        <div class="quantity-control">
+                            <button onclick="updateQuantity(${index}, -1)">-</button>
+                            <span id="qty_${index}">${item.quantity}</span>
+                            <button onclick="updateQuantity(${index}, 1)">+</button>
+                        </div>
+                        <div class="cart-item-price">
+                            <div class="item-total">¥${itemTotal}</div>
+                        </div>
+                        <button class="delete-btn" onclick="removeItem(${index})">🗑️</button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        container.innerHTML = `
+            ${itemsHtml}
+            <div class="cart-summary">
+                <div class="total">总计：<span>¥${grandTotal}</span></div>
+                <div>
+                    <button class="continue-btn" onclick="continueShopping()">继续购物</button>
+                    <button class="checkout-btn" onclick="goToCheckout()">去结算</button>
+                </div>
+            </div>
+        `;
+    }
+
+    function updateQuantity(index, delta) {
+        if (index < 0 || index >= currentCart.length) return;
+
+        const newQty = currentCart[index].quantity + delta;
+        if (newQty < 1) return;
+        if (newQty > 99) return;
+
+        currentCart[index].quantity = newQty;
+
+        const toppingsTotal = (currentCart[index].toppings || []).reduce((sum, t) => sum + (t.price * t.quantity), 0);
+        currentCart[index].total = (currentCart[index].basePrice + toppingsTotal) * newQty;
+
+        saveCart(currentCart);
+        loadCart();
+    }
+
+    function removeItem(index) {
+        if (index < 0 || index >= currentCart.length) return;
+
+        if (confirm('确定要删除这个商品吗？')) {
+            currentCart.splice(index, 1);
+            saveCart(currentCart);
+            loadCart();
+        }
+    }
+
+    function continueShopping() {
+        window.location.href = 'menu.html';
+    }
+
+    function goToCheckout() {
+        if (currentCart.length === 0) {
+            alert('购物车还是空的，请先添加商品');
+            return;
+        }
+        window.location.href = 'checkout.html';
+    }
+
+    window.updateQuantity = updateQuantity;
+    window.removeItem = removeItem;
+    window.continueShopping = continueShopping;
+    window.goToCheckout = goToCheckout;
+</script>
