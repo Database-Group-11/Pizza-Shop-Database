@@ -12,6 +12,7 @@ public class PizzaDAO {
     public List<Pizza> getAllPizzas() {
         List<Pizza> pizzas = new ArrayList<>();
         String sql = "SELECT pizza_id, name, description, base_price, category, image, available FROM pizzas WHERE available = 1";
+        System.out.println("SQL: " + sql);
 
         try (Connection conn = DBUtil.getConnection();
              Statement stmt = conn.createStatement();

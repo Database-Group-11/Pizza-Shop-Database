@@ -2,23 +2,26 @@
 -- 测试数据
 -- ============================================
 
+-- 关闭外键检查
+SET FOREIGN_KEY_CHECKS = 0;
+
 -- ============================================
 -- 1. 顾客数据
 -- ============================================
-INSERT INTO customers (name, phone, password, address, create_time, update_time) VALUES
-                                                                                     ('张三', '13800138000', '123456', '北京市海淀区', NOW(), NOW()),
-                                                                                     ('李四', '13900139000', '123456', '上海市浦东新区', NOW(), NOW()),
-                                                                                     ('王五', '13700137000', '123456', '广州市天河区', NOW(), NOW());
+INSERT INTO customers (name, phone, password, address) VALUES
+                                                           ('Zhang San', '13800138000', '123456', 'Haidian District, Beijing'),
+                                                           ('Li Si', '13900139000', '123456', 'Pudong District, Shanghai'),
+                                                           ('Wang Wu', '13700137000', '123456', 'Tianhe District, Guangzhou');
 
 -- ============================================
 -- 2. 披萨数据
 -- ============================================
-INSERT INTO pizzas (name, description, base_price, category, stock_quantity, reorder_level) VALUES
-                                                                                                ('Margherita', '经典番茄芝士披萨', 8.99, 'Classic', 100, 10),
-                                                                                                ('Pepperoni', '意式辣香肠披萨', 10.99, 'Classic', 80, 10),
-                                                                                                ('Hawaiian', '夏威夷火腿菠萝披萨', 11.99, 'Specialty', 60, 10),
-                                                                                                ('Meat Lovers', '肉食爱好者披萨', 13.99, 'Specialty', 50, 10),
-                                                                                                ('Veggie Supreme', '素食至尊披萨', 12.99, 'Vegetarian', 70, 10);
+INSERT INTO pizzas (name, description, base_price, category) VALUES
+                                                                 ('Margherita', 'Classic tomato cheese pizza', 8.99, 'Classic'),
+                                                                 ('Pepperoni', 'Italian spicy sausage pizza', 10.99, 'Classic'),
+                                                                 ('Hawaiian', 'Ham and pineapple pizza', 11.99, 'Specialty'),
+                                                                 ('Meat Lovers', 'Meat lovers pizza', 13.99, 'Specialty'),
+                                                                 ('Veggie Supreme', 'Vegetarian supreme pizza', 12.99, 'Vegetarian');
 
 -- ============================================
 -- 3. 配料数据
@@ -36,11 +39,11 @@ INSERT INTO toppings (name, price, stock_quantity) VALUES
 -- 4. 订单数据
 -- ============================================
 INSERT INTO orders (order_no, order_time, total_amount, status, delivery_address, customer_id) VALUES
-                                                                                                   ('ORD20260507001', '2026-05-07 10:30:00', 12.49, 'completed', '北京市海淀区', 1),
-                                                                                                   ('ORD20260507002', '2026-05-07 11:45:00', 23.98, 'delivering', '上海市浦东新区', 2),
-                                                                                                   ('ORD20260508001', '2026-05-08 09:15:00', 10.99, 'pending', '广州市天河区', 3),
-                                                                                                   ('ORD20260508002', '2026-05-08 12:00:00', 15.99, 'paid', '北京市海淀区', 1),
-                                                                                                   ('ORD20260508003', '2026-05-08 18:30:00', 13.99, 'preparing', '上海市浦东新区', 2);
+                                                                                                   ('ORD20260507001', '2026-05-07 10:30:00', 12.49, 'completed', 'Haidian District, Beijing', 1),
+                                                                                                   ('ORD20260507002', '2026-05-07 11:45:00', 23.98, 'delivering', 'Pudong District, Shanghai', 2),
+                                                                                                   ('ORD20260508001', '2026-05-08 09:15:00', 10.99, 'pending', 'Tianhe District, Guangzhou', 3),
+                                                                                                   ('ORD20260508002', '2026-05-08 12:00:00', 15.99, 'paid', 'Haidian District, Beijing', 1),
+                                                                                                   ('ORD20260508003', '2026-05-08 18:30:00', 13.99, 'preparing', 'Pudong District, Shanghai', 2);
 
 -- ============================================
 -- 5. 订单项数据
@@ -77,8 +80,11 @@ INSERT INTO payments (payment_method, amount, payment_time, status, order_id) VA
 -- 8. 配送数据
 -- ============================================
 INSERT INTO deliveries (rider_name, start_time, arrive_time, status, order_id) VALUES
-                                                                                   ('骑手小王', '2026-05-07 10:35:00', '2026-05-07 11:00:00', 'delivered', 1),
-                                                                                   ('骑手小李', '2026-05-07 11:50:00', NULL, 'delivering', 2),
+                                                                                   ('Rider Wang', '2026-05-07 10:35:00', '2026-05-07 11:00:00', 'delivered', 1),
+                                                                                   ('Rider Li', '2026-05-07 11:50:00', NULL, 'delivering', 2),
                                                                                    (NULL, NULL, NULL, 'pending', 3),
-                                                                                   ('骑手小张', '2026-05-08 12:05:00', NULL, 'delivering', 4),
+                                                                                   ('Rider Zhang', '2026-05-08 12:05:00', NULL, 'delivering', 4),
                                                                                    (NULL, NULL, NULL, 'preparing', 5);
+
+-- 重新开启外键检查
+SET FOREIGN_KEY_CHECKS = 1;

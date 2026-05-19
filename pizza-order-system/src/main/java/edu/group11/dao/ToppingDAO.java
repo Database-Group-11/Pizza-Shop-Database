@@ -13,7 +13,7 @@ public class ToppingDAO {
     // 获取所有配料
     public List<Map<String, Object>> getAllToppings() {
         List<Map<String, Object>> toppings = new ArrayList<>();
-        String sql = "SELECT topping_id, name, price, stock_quantity, category, image, available FROM toppings";
+        String sql = "SELECT topping_id, name, price, stock_quantity FROM toppings";
 
         try (Connection conn = DBUtil.getConnection();
              Statement stmt = conn.createStatement();

@@ -8,9 +8,10 @@
         </element>
         <element id="directory" name="lib">
           <element id="file-copy" path="$PROJECT_DIR$/pizza-order-system/lib/gson-2.14.0.jar" />
+          <element id="library" level="project" name="Maven: com.mysql:mysql-connector-j:8.0.33" />
         </element>
       </element>
-      <element id="javaee-facet-resources" facet="myproject/web/Web" />
+      <element id="dir-copy" path="$PROJECT_DIR$/pizza-order-system/web" />
     </root>
   </artifact>
 </component>
