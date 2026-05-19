@@ -10,7 +10,7 @@ public class DBUtil {
     private static final String DRIVER = "com.mysql.cj.jdbc.Driver";
     private static final String URL = "jdbc:mysql://localhost:3306/pizza_system?useSSL=false&serverTimezone=Asia/Shanghai&characterEncoding=utf-8";
     private static final String USERNAME = "root";
-    private static final String PASSWORD = "Qsq21621421@";  // 请修改为您的MySQL密码
+    private static final String PASSWORD = "@Zjy20060219";  // 请修改为您的MySQL密码
 
     // 静态代码块，加载驱动
     static {

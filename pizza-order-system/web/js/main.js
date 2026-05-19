@@ -1,3 +1,6 @@
+// ========== API 配置 ==========
+const API_BASE = 'http://localhost:8080/api';
+
 // ========== 公共工具函数 ==========
 
 // 获取当前登录用户
@@ -40,7 +43,7 @@ function saveCart(cart) {
     localStorage.setItem('cart', JSON.stringify(cart));
     // 更新所有页面的购物车角标
     const cartCountSpans = document.querySelectorAll('#cartCount');
-    const count = cart.reduce((sum, item) => sum + item.quantity, 0);
+    const count = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
     cartCountSpans.forEach(span => {
         if (span) span.textContent = count;
     });
@@ -51,13 +54,13 @@ function addToCart(pizza, selectedToppings, quantity) {
 
     // 计算配料总价
     const toppingsTotal = selectedToppings.reduce((sum, t) => sum + (t.price * t.quantity), 0);
-    const itemTotal = (pizza.base_price + toppingsTotal) * quantity;
+    const itemTotal = (pizza.basePrice + toppingsTotal) * quantity;
 
     const cartItem = {
         id: Date.now(),
-        pizza_id: pizza.pizza_id,
-        pizza_name: pizza.name,
-        base_price: pizza.base_price,
+        pizzaId: pizza.pizzaId,
+        pizzaName: pizza.name,
+        basePrice: pizza.basePrice,
         toppings: selectedToppings,
         quantity: quantity,
         total: itemTotal
@@ -68,26 +71,36 @@ function addToCart(pizza, selectedToppings, quantity) {
     alert(`已添加 ${quantity} 份 ${pizza.name} 到购物车`);
 }
 
-// ========== 模拟数据 ==========
-const MOCK_PIZZAS = [
-    { pizza_id: 1, name: '经典玛格丽特', description: '新鲜番茄 + 罗勒叶 + 马苏里拉芝士', base_price: 39, category: '经典', image: '图片1' },
-    { pizza_id: 2, name: '超级至尊', description: '意式香肠 + 培根 + 牛肉粒 + 蘑菇', base_price: 59, category: '肉类', image: '图片2' },
-    { pizza_id: 3, name: '田园素食', description: '青椒 + 玉米 + 蘑菇 + 橄榄', base_price: 45, category: '素食', image: '图片3' },
-    { pizza_id: 4, name: '海鲜总汇', description: '鲜虾 + 鱿鱼 + 蟹柳 + 青椒', base_price: 69, category: '海鲜', image: '图片4' },
-    { pizza_id: 5, name: '夏威夷风情', description: '火腿 + 菠萝 + 芝士', base_price: 49, category: '经典', image: '图片5' },
-    { pizza_id: 6, name: '黑椒牛肉', description: '黑椒牛肉 + 洋葱 + 青椒', base_price: 55, category: '肉类', image: '图片6' },
-    { pizza_id: 7, name: '四重芝士', description: '四种芝士混合，浓郁拉丝', base_price: 52, category: '经典', image: '图片7' },
-    { pizza_id: 8, name: '蘑菇鸡肉', description: '鸡胸肉 + 蘑菇 + 玉米', base_price: 48, category: '肉类', image: '图片8' }
-];
+// ========== 状态映射（文档格式 → 中文显示）==========
+function getStatusText(status) {
+    const map = {
+        'pending': '⏳ 待支付',
+        'paid': '✅ 已支付',
+        'preparing': '🍳 制作中',
+        'delivering': '🚚 配送中',
+        'completed': '🎉 已完成',
+        'cancelled': '❌ 已取消'
+    };
+    return map[status] || status;
+}
 
-const MOCK_TOPPINGS = [
-    { topping_id: 1, name: '加芝士', price: 8, stock_quantity: 100 },
-    { topping_id: 2, name: '培根', price: 10, stock_quantity: 50 },
-    { topping_id: 3, name: '蘑菇', price: 6, stock_quantity: 80 },
-    { topping_id: 4, name: '青椒', price: 5, stock_quantity: 60 },
-    { topping_id: 5, name: '玉米', price: 5, stock_quantity: 70 },
-    { topping_id: 6, name: '洋葱', price: 4, stock_quantity: 90 }
-];
+function getStatusClass(status) {
+    const map = {
+        'pending': 'status-pending',
+        'paid': 'status-paid',
+        'preparing': 'status-preparing',
+        'delivering': 'status-delivering',
+        'completed': 'status-completed',
+        'cancelled': 'status-cancelled'
+    };
+    return map[status] || 'status-pending';
+}
+
+function formatDate(dateStr) {
+    if (!dateStr) return '--';
+    const d = new Date(dateStr);
+    return `${d.getMonth()+1}/${d.getDate()} ${d.getHours()}:${String(d.getMinutes()).padStart(2,'0')}`;
+}
 
 // ========== 登录页面逻辑 ==========
 if (document.getElementById('loginForm')) {
@@ -104,16 +117,29 @@ if (document.getElementById('loginForm')) {
             return;
         }
 
-        // 模拟登录成功
-        const mockUser = {
-            customer_id: 1,
-            name: '测试用户',
-            phone: phone,
-            address: '北京市朝阳区xxx'
-        };
-
-        setCurrentUser(mockUser);
-        window.location.href = 'menu.html';
+        try {
+            const response = await fetch(`${API_BASE}/customer/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ phone, password })
+            });
+            const result = await response.json();
+            if (result.code === 200) {
+                // 转换字段名（后端返回的是 customerId）
+                const user = {
+                    customerId: result.data.customerId,
+                    name: result.data.name,
+                    phone: result.data.phone,
+                    address: result.data.address
+                };
+                setCurrentUser(user);
+                window.location.href = 'menu.html';
+            } else {
+                showError('errorMsg', result.message || '登录失败');
+            }
+        } catch (error) {
+            showError('errorMsg', '网络错误，请稍后重试');
+        }
     });
 }
 
@@ -145,88 +171,23 @@ if (document.getElementById('registerForm')) {
             return;
         }
 
-        alert('注册成功！请登录');
-        window.location.href = 'login.html';
+        try {
+            const response = await fetch(`${API_BASE}/customer/register`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, phone, password, address })
+            });
+            const result = await response.json();
+            if (result.code === 200) {
+                alert('注册成功！请登录');
+                window.location.href = 'login.html';
+            } else {
+                showError('errorMsg', result.message || '注册失败');
+            }
+        } catch (error) {
+            showError('errorMsg', '网络错误，请稍后重试');
+        }
     });
-}
-
-// ========== 菜单页逻辑 ==========
-if (document.getElementById('pizzaGrid')) {
-    let currentCategory = 'all';
-
-    // 检查登录状态
-    const user = getCurrentUser();
-    const userNameSpan = document.getElementById('userNameDisplay');
-    if (!user) {
-        window.location.href = 'login.html';
-    } else {
-        if (userNameSpan) {
-            userNameSpan.textContent = `欢迎，${user.name}`;
-        }
-    }
-
-    // 更新购物车数量显示
-    function updateCartCount() {
-        const cart = getCart();
-        const count = cart.reduce((sum, item) => sum + item.quantity, 0);
-        const cartCountSpan = document.getElementById('cartCount');
-        if (cartCountSpan) cartCountSpan.textContent = count;
-    }
-
-    // 渲染披萨列表
-    function renderPizzas() {
-        let filtered = MOCK_PIZZAS;
-        if (currentCategory !== 'all') {
-            filtered = MOCK_PIZZAS.filter(p => p.category === currentCategory);
-        }
-
-        const grid = document.getElementById('pizzaGrid');
-        if (!grid) return;
-
-        grid.innerHTML = filtered.map(pizza => `
-            <div class="pizza-card">
-                < img src="${pizza.image}" alt="${pizza.name}">
-                <div class="info">
-                    <h3>${pizza.name}</h3>
-                    <div class="desc">${pizza.description}</div>
-                    <div class="price">¥${pizza.base_price}</div>
-                    <button onclick="viewPizzaDetail(${pizza.pizza_id})">定制 & 加入购物车</button>
-                </div>
-            </div>
-        `).join('');
-    }
-
-    // 查看披萨详情
-    window.viewPizzaDetail = function(pizzaId) {
-        const pizza = MOCK_PIZZAS.find(p => p.pizza_id === pizzaId);
-        if (pizza) {
-            sessionStorage.setItem('selectedPizza', JSON.stringify(pizza));
-            window.location.href = 'pizza_detail.html';
-        }
-    };
-
-    // 分类切换
-    document.querySelectorAll('.category-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            currentCategory = btn.dataset.category;
-            renderPizzas();
-        });
-    });
-
-    // 退出登录
-    const logoutBtn = document.getElementById('logoutBtn');
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            logout();
-        });
-    }
-
-    // 初始化
-    renderPizzas();
-    updateCartCount();
 }
 
 // 导出函数供全局使用
@@ -236,5 +197,7 @@ window.logout = logout;
 window.getCart = getCart;
 window.saveCart = saveCart;
 window.addToCart = addToCart;
-window.MOCK_PIZZAS = MOCK_PIZZAS;
-window.MOCK_TOPPINGS = MOCK_TOPPINGS;
+window.getStatusText = getStatusText;
+window.getStatusClass = getStatusClass;
+window.formatDate = formatDate;
+window.API_BASE = API_BASE;
