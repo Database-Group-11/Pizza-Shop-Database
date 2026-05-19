@@ -24,3 +24,5 @@ hs_err_pid*
 replay_pid*
 
 **/DBUtil.java
+**/util/DBUtil.java
+src/main/java/edu/group11/util/DBUtil.java
