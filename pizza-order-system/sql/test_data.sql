@@ -16,55 +16,55 @@ INSERT INTO customers (name, phone, password, address) VALUES
 -- ============================================
 -- 2. 披萨数据
 -- ============================================
-INSERT INTO pizzas (name, description, base_price, category) VALUES
-                                                                 ('Margherita', 'Classic tomato cheese pizza', 8.99, 'Classic'),
-                                                                 ('Pepperoni', 'Italian spicy sausage pizza', 10.99, 'Classic'),
-                                                                 ('Hawaiian', 'Ham and pineapple pizza', 11.99, 'Specialty'),
-                                                                 ('Meat Lovers', 'Meat lovers pizza', 13.99, 'Specialty'),
-                                                                 ('Veggie Supreme', 'Vegetarian supreme pizza', 12.99, 'Vegetarian');
+INSERT INTO pizzas (name, description, base_price, category, image, available, stock_quantity, reorder_level) VALUES
+                                                                                                                  ('Margherita', 'Classic tomato cheese pizza', 8.99, 'Classic', NULL, 1, 100, 10),
+                                                                                                                  ('Pepperoni', 'Italian spicy sausage pizza', 10.99, 'Classic', NULL, 1, 80, 10),
+                                                                                                                  ('Hawaiian', 'Ham and pineapple pizza', 11.99, 'Specialty', NULL, 1, 60, 10),
+                                                                                                                  ('Meat Lovers', 'Meat lovers pizza', 13.99, 'Specialty', NULL, 1, 50, 10),
+                                                                                                                  ('Veggie Supreme', 'Vegetarian supreme pizza', 12.99, 'Vegetarian', NULL, 1, 70, 10);
 
 -- ============================================
 -- 3. 配料数据
 -- ============================================
-INSERT INTO toppings (name, price, stock_quantity) VALUES
-                                                       ('Extra Cheese', 1.50, 100),
-                                                       ('Pepperoni', 2.00, 80),
-                                                       ('Mushrooms', 1.00, 50),
-                                                       ('Onions', 0.50, 60),
-                                                       ('Bacon', 2.50, 40),
-                                                       ('Pineapple', 1.00, 30),
-                                                       ('Olives', 1.00, 45);
+INSERT INTO toppings (name, price, stock_quantity, available) VALUES
+                                                                  ('Extra Cheese', 1.50, 100, 1),
+                                                                  ('Pepperoni', 2.00, 80, 1),
+                                                                  ('Mushrooms', 1.00, 50, 1),
+                                                                  ('Onions', 0.50, 60, 1),
+                                                                  ('Bacon', 2.50, 40, 1),
+                                                                  ('Pineapple', 1.00, 30, 1),
+                                                                  ('Olives', 1.00, 45, 1);
 
 -- ============================================
 -- 4. 订单数据
 -- ============================================
-INSERT INTO orders (order_no, order_time, total_amount, status, delivery_address, customer_id) VALUES
-                                                                                                   ('ORD20260507001', '2026-05-07 10:30:00', 12.49, 'completed', 'Haidian District, Beijing', 1),
-                                                                                                   ('ORD20260507002', '2026-05-07 11:45:00', 23.98, 'delivering', 'Pudong District, Shanghai', 2),
-                                                                                                   ('ORD20260508001', '2026-05-08 09:15:00', 10.99, 'pending', 'Tianhe District, Guangzhou', 3),
-                                                                                                   ('ORD20260508002', '2026-05-08 12:00:00', 15.99, 'paid', 'Haidian District, Beijing', 1),
-                                                                                                   ('ORD20260508003', '2026-05-08 18:30:00', 13.99, 'preparing', 'Pudong District, Shanghai', 2);
+INSERT INTO orders (order_no, order_time, total_amount, status, delivery_address, payment_method, customer_id) VALUES
+                                                                                                                   ('ORD20260507001', '2026-05-07 10:30:00', 12.49, 'completed', 'Haidian District, Beijing', 'Credit Card', 1),
+                                                                                                                   ('ORD20260507002', '2026-05-07 11:45:00', 23.98, 'delivering', 'Pudong District, Shanghai', 'Cash', 2),
+                                                                                                                   ('ORD20260508001', '2026-05-08 09:15:00', 10.99, 'pending', 'Tianhe District, Guangzhou', 'Credit Card', 3),
+                                                                                                                   ('ORD20260508002', '2026-05-08 12:00:00', 15.99, 'paid', 'Haidian District, Beijing', 'Alipay', 1),
+                                                                                                                   ('ORD20260508003', '2026-05-08 18:30:00', 13.99, 'preparing', 'Pudong District, Shanghai', 'WeChat Pay', 2);
 
 -- ============================================
 -- 5. 订单项数据
 -- ============================================
-INSERT INTO order_items (quantity, subtotal, order_id, pizza_id) VALUES
-                                                                     (1, 10.49, 1, 1),   -- 订单1：1个Margherita + Extra Cheese
-                                                                     (1, 13.99, 1, 4),   -- 订单1：1个Meat Lovers
-                                                                     (2, 23.98, 2, 3),   -- 订单2：2个Hawaiian
-                                                                     (1, 10.99, 3, 2),   -- 订单3：1个Pepperoni
-                                                                     (1, 15.99, 4, 5),   -- 订单4：1个Veggie Supreme
-                                                                     (1, 13.99, 5, 4);   -- 订单5：1个Meat Lovers
+INSERT INTO order_items (order_id, pizza_id, quantity, unit_price, subtotal) VALUES
+                                                                                 (1, 1, 1, 8.99, 8.99),
+                                                                                 (1, 4, 1, 13.99, 13.99),
+                                                                                 (2, 3, 2, 11.99, 23.98),
+                                                                                 (3, 2, 1, 10.99, 10.99),
+                                                                                 (4, 5, 1, 15.99, 15.99),
+                                                                                 (5, 4, 1, 13.99, 13.99);
 
 -- ============================================
 -- 6. 订单配料关联数据
 -- ============================================
 INSERT INTO order_toppings (item_id, topping_id, quantity) VALUES
-                                                               (1, 1, 1),   -- 订单项1加Extra Cheese
-                                                               (2, 5, 1),   -- 订单项2加Bacon
-                                                               (3, 6, 2),   -- 订单项3加2份Pineapple
-                                                               (5, 3, 1),   -- 订单项5加Mushrooms
-                                                               (5, 4, 1);   -- 订单项5加Onions
+                                                               (1, 1, 1),
+                                                               (2, 5, 1),
+                                                               (3, 6, 2),
+                                                               (5, 3, 1),
+                                                               (5, 4, 1);
 
 -- ============================================
 -- 7. 支付数据
