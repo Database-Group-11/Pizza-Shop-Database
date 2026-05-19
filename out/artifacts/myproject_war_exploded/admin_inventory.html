@@ -1,0 +1,145 @@
+<script>
+    let toppings = [];
+    let editId = null;
+
+    function checkAdminAuth() {
+        const token = localStorage.getItem('adminToken');
+        if (!token) window.location.href = 'admin_login.html';
+    }
+    checkAdminAuth();
+
+    async function loadToppings() {
+        try {
+            const response = await fetch(`${API_BASE}/admin/toppings`);
+            const result = await response.json();
+            if (result.code === 200) {
+                toppings = result.data;
+                renderTable();
+            }
+        } catch (error) {
+            console.error('加载配料失败:', error);
+        }
+    }
+
+    function renderTable() {
+        const tbody = document.getElementById('toppingsTableBody');
+        tbody.innerHTML = toppings.map(t => {
+            const isLowStock = t.stockQuantity < 20;
+            return `
+                <tr>
+                    <td>${t.toppingId}</td>
+                    <td>${t.name}</td>
+                    <td>¥${t.price}</td>
+                    <td>
+                        <input type="number" class="stock-input" id="stock_${t.toppingId}" value="${t.stockQuantity}" min="0">
+                    </td>
+                    <td class="${isLowStock ? 'low-stock' : ''}">${isLowStock ? '⚠️ 库存不足' : '充足'}</td>
+                    <td>
+                        <button class="btn-sm btn-edit" onclick="updateStock(${t.toppingId})">更新库存</button>
+                        <button class="btn-sm btn-delete" onclick="deleteTopping(${t.toppingId})">删除</button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    async function updateStock(toppingId) {
+        const input = document.getElementById(`stock_${toppingId}`);
+        const newStock = parseInt(input.value);
+        const topping = toppings.find(t => t.toppingId === toppingId);
+
+        if (topping) {
+            try {
+                const response = await fetch(`${API_BASE}/admin/toppings/${toppingId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: topping.name,
+                        price: topping.price,
+                        stockQuantity: newStock,
+                        available: true
+                    })
+                });
+                const result = await response.json();
+                if (result.code === 200) {
+                    alert('库存已更新');
+                    loadToppings();
+                } else {
+                    alert(result.message || '更新失败');
+                }
+            } catch (error) {
+                alert('网络错误');
+            }
+        }
+    }
+
+    async function deleteTopping(toppingId) {
+        if (!confirm('确定要删除这个配料吗？')) return;
+
+        try {
+            const response = await fetch(`${API_BASE}/admin/toppings/${toppingId}`, {
+                method: 'DELETE'
+            });
+            const result = await response.json();
+            if (result.code === 200) {
+                alert('已删除');
+                loadToppings();
+            } else {
+                alert(result.message || '删除失败');
+            }
+        } catch (error) {
+            alert('网络错误');
+        }
+    }
+
+    function openAddModal() {
+        editId = null;
+        document.getElementById('modalTitle').innerText = '新增配料';
+        document.getElementById('toppingName').value = '';
+        document.getElementById('toppingPrice').value = '';
+        document.getElementById('toppingStock').value = '';
+        document.getElementById('modal').style.display = 'flex';
+    }
+
+    function closeModal() {
+        document.getElementById('modal').style.display = 'none';
+    }
+
+    async function saveTopping() {
+        const name = document.getElementById('toppingName').value;
+        const price = parseFloat(document.getElementById('toppingPrice').value);
+        const stock = parseInt(document.getElementById('toppingStock').value);
+
+        if (!name || isNaN(price) || isNaN(stock)) {
+            alert('请填写完整信息');
+            return;
+        }
+
+        try {
+            const response = await fetch(`${API_BASE}/admin/toppings`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, price, stockQuantity: stock })
+            });
+            const result = await response.json();
+            if (result.code === 200) {
+                alert('添加成功');
+                closeModal();
+                loadToppings();
+            } else {
+                alert(result.message || '添加失败');
+            }
+        } catch (error) {
+            alert('网络错误');
+        }
+    }
+
+    document.getElementById('adminLogoutBtn').addEventListener('click', (e) => {
+        e.preventDefault();
+        localStorage.removeItem('adminToken');
+        localStorage.removeItem('adminInfo');
+        window.location.href = 'admin_login.html';
+    });
+
+    loadToppings();
+</script>

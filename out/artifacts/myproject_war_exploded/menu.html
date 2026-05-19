@@ -1,0 +1,90 @@
+<script src="js/main.js"></script>
+<script>
+    let currentCategory = 'all';
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const user = getCurrentUser();
+        if (!user) {
+            window.location.href = 'login.html';
+            return;
+        }
+
+        const userNameSpan = document.getElementById('userNameDisplay');
+        if (userNameSpan) {
+            userNameSpan.textContent = `欢迎，${user.name}`;
+        }
+
+        updateCartCount();
+        loadPizzas();
+
+        // 分类切换
+        document.querySelectorAll('.category-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentCategory = btn.dataset.category;
+                loadPizzas();
+            });
+        });
+
+        // 退出登录
+        const logoutBtn = document.getElementById('logoutBtn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                logout();
+            });
+        }
+    });
+
+    function updateCartCount() {
+        const cart = getCart();
+        const count = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
+        const span = document.getElementById('cartCount');
+        if (span) span.textContent = count;
+    }
+
+    async function loadPizzas() {
+        try {
+            const response = await fetch(`${API_BASE}/pizzas`);
+            const result = await response.json();
+            if (result.code === 200) {
+                let pizzas = result.data;
+                if (currentCategory !== 'all') {
+                    pizzas = pizzas.filter(p => p.category === currentCategory);
+                }
+                renderPizzas(pizzas);
+            } else {
+                console.error('加载披萨失败:', result.message);
+            }
+        } catch (error) {
+            console.error('网络错误:', error);
+        }
+    }
+
+    function renderPizzas(pizzas) {
+        const grid = document.getElementById('pizzaGrid');
+        if (!grid) return;
+
+        if (pizzas.length === 0) {
+            grid.innerHTML = '<div style="text-align:center; padding:40px;">暂无披萨</div>';
+            return;
+        }
+
+        grid.innerHTML = pizzas.map(pizza => `
+            <div class="pizza-card">
+                < img src="${pizza.image || 'https://picsum.photos/id/106/300/200'}" alt="${pizza.name}">
+                <div class="info">
+                    <h3>${pizza.name}</h3>
+                    <div class="desc">${pizza.description || ''}</div>
+                    <div class="price">¥${pizza.basePrice}</div>
+                    <button onclick="viewPizzaDetail(${pizza.pizzaId})">定制 & 加入购物车</button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function viewPizzaDetail(pizzaId) {
+        window.location.href = `pizza_detail.html?pizza_id=${pizzaId}`;
+    }
+</script>
