@@ -102,17 +102,22 @@
     }
 
     async function loadPizzas() {
-
         const grid = document.getElementById('pizzaGrid');
         grid.innerHTML = '<div style="text-align:center; padding:40px;">加载中...</div>';
 
         try {
-            const response = await fetch(`${API_BASE}/pizzas`);
+            let url = `${API_BASE}/api/pizzas`;
+            if (currentCategory !== 'all') {
+                url += `?category=${currentCategory}`;
+            }
+
+            const response = await fetch(url);
             const result = await response.json();
             console.log('披萨数据:', result);
 
             if (result.code === 200) {
                 let pizzas = result.data;
+                // 如果后端没有按分类筛选，前端自己过滤
                 if (currentCategory !== 'all') {
                     pizzas = pizzas.filter(p => p.category === currentCategory);
                 }
@@ -122,7 +127,7 @@
             }
         } catch (error) {
             console.error('网络错误:', error);
-            grid.innerHTML = '<div style="text-align:center; padding:40px; color:#e74c3c;">网络错误，请检查后端是否启动</div>';
+            grid.innerHTML = '<div style="text-align:center; padding:40px; color:#e74c3c;">网络错误，请检查后端</div>';
         }
     }
 
@@ -135,17 +140,26 @@
             return;
         }
 
-        grid.innerHTML = pizzas.map(pizza => `
-                <div class="pizza-card">
-                    < img src="${pizza.image || 'https://picsum.photos/id/106/300/200'}" alt="${pizza.name}">
-                    <div class="info">
-                        <h3>${pizza.name}</h3>
-                        <div class="desc">${pizza.description || ''}</div>
-                        <div class="price">¥${pizza.basePrice || pizza.base_price}</div>
-                        <button onclick="viewPizzaDetail(${pizza.pizzaId || pizza.pizza_id})">定制 & 加入购物车</button>
-                    </div>
+        grid.innerHTML = pizzas.map(pizza => {
+            // 兼容两种字段名格式
+            const pizzaId = pizza.pizza_id || pizza.pizzaId;
+            const name = pizza.name;
+            const description = pizza.description || '';
+            const price = pizza.base_price || pizza.basePrice;
+            const image = pizza.image || 'https://picsum.photos/id/106/300/200';
+
+            return `
+            <div class="pizza-card">
+                < img src="${image}" alt="${name}">
+                <div class="info">
+                    <h3>${name}</h3>
+                    <div class="desc">${description}</div>
+                    <div class="price">¥${price}</div>
+                    <button onclick="viewPizzaDetail(${pizzaId})">定制 & 加入购物车</button>
                 </div>
-            `).join('');
+            </div>
+        `;
+        }).join('');
     }
 
     function viewPizzaDetail(pizzaId) {
