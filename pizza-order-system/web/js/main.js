@@ -1,6 +1,61 @@
 // ========== API 配置 ==========
 const API_BASE = 'http://localhost:8080/api';
 
+// ========== 登录页面逻辑 ==========
+if (document.getElementById('loginForm')) {
+    const loginForm = document.getElementById('loginForm');
+
+    loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const phone = document.getElementById('phone').value;
+        const password = document.getElementById('password').value;
+
+        if (!phone || !password) {
+            showError('errorMsg', '请填写手机号和密码');
+            return;
+        }
+
+        // ========== 临时测试账号（绕过后端）==========
+        // 只要手机号输入 13800138000，密码任意，就能登录
+        if (phone === '13800138000') {
+            const testUser = {
+                customerId: 1,
+                name: '测试用户',
+                phone: '13800138000',
+                address: '北京市朝阳区测试路123号'
+            };
+            setCurrentUser(testUser);
+            window.location.href = 'menu.html';
+            return;
+        }
+        // ========== 测试账号结束 ==========
+
+        // 正常后端登录（等后端好了再启用）
+        try {
+            const response = await fetch(`${API_BASE}/customer/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ phone, password })
+            });
+            const result = await response.json();
+            if (result.code === 200) {
+                const user = {
+                    customerId: result.data.customerId,
+                    name: result.data.name,
+                    phone: result.data.phone,
+                    address: result.data.address
+                };
+                setCurrentUser(user);
+                window.location.href = 'menu.html';
+            } else {
+                showError('errorMsg', result.message || '登录失败');
+            }
+        } catch (error) {
+            showError('errorMsg', '网络错误，请稍后重试');
+        }
+    });
+}
 // ========== 公共工具函数 ==========
 
 // 获取当前登录用户
@@ -201,3 +256,5 @@ window.getStatusText = getStatusText;
 window.getStatusClass = getStatusClass;
 window.formatDate = formatDate;
 window.API_BASE = API_BASE;
+
+
