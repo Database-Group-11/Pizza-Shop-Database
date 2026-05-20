@@ -1,3 +1,142 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的订单 - 披萨外卖系统</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .history-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .order-item {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .order-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 12px;
+        }
+        .order-id {
+            font-weight: bold;
+            color: #333;
+        }
+        .order-date {
+            color: #999;
+            font-size: 13px;
+        }
+        .order-status {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .status-pending { background: #f39c12; color: white; }
+        .status-paid { background: #3498db; color: white; }
+        .status-preparing { background: #e67e22; color: white; }
+        .status-delivering { background: #9b59b6; color: white; }
+        .status-completed { background: #27ae60; color: white; }
+        .status-cancelled { background: #e74c3c; color: white; }
+
+        .order-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .order-pizzas {
+            flex: 2;
+            color: #666;
+            font-size: 14px;
+        }
+        .order-total {
+            font-size: 18px;
+            font-weight: bold;
+            color: #e74c3c;
+        }
+        .empty-orders {
+            text-align: center;
+            padding: 60px 20px;
+            background: white;
+            border-radius: 16px;
+        }
+        .empty-orders h3 {
+            color: #666;
+            margin-bottom: 20px;
+        }
+        .empty-orders a {
+            display: inline-block;
+            background: #e74c3c;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 30px;
+            text-decoration: none;
+        }
+        .filter-tabs {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+        .filter-tab {
+            padding: 8px 20px;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .filter-tab.active {
+            background: #e74c3c;
+            color: white;
+            border-color: #e74c3c;
+        }
+    </style>
+</head>
+<body>
+<nav class="navbar">
+    <a href=" " class="navbar-brand">🍕 披萨外卖</a >
+    <div class="navbar-menu">
+        <a href="menu.html">菜单</a >
+        <a href="cart.html">购物车 <span id="cartCount" class="cart-badge">0</span></a >
+        <a href="order_history.html">我的订单</a >
+        <span id="userNameDisplay" style="color:#666;"></span>
+        <a href="#" id="logoutBtn">退出</a >
+    </div>
+</nav>
+
+<div class="container history-container">
+    <h1 style="margin-bottom: 24px;">📋 我的订单</h1>
+
+    <div class="filter-tabs">
+        <button class="filter-tab active" data-status="all">全部</button>
+        <button class="filter-tab" data-status="pending">待支付</button>
+        <button class="filter-tab" data-status="progress">进行中</button>
+        <button class="filter-tab" data-status="completed">已完成</button>
+        <button class="filter-tab" data-status="cancelled">已取消</button>
+    </div>
+
+    <div id="ordersList">
+        <!-- 动态加载订单列表 -->
+    </div>
+</div>
+
 <script src="js/main.js"></script>
 <script>
     let allOrders = [];
@@ -48,18 +187,23 @@
         const user = getCurrentUser();
         if (!user) return;
 
+        const customerId = user.customerId || user.customer_id;
+
         try {
-            const response = await fetch(`${API_BASE}/orders/customer?customer_id=${user.customerId}`);
+            const response = await fetch(`${API_BASE}/orders/customer?customer_id=${customerId}`);
             const result = await response.json();
+            console.log('订单列表:', result);
+
             if (result.code === 200) {
                 allOrders = result.data;
                 renderOrders();
             } else {
                 console.error('加载订单失败:', result.message);
+                allOrders = [];
+                renderOrders();
             }
         } catch (error) {
             console.error('网络错误:', error);
-            // 演示用空数据
             allOrders = [];
             renderOrders();
         }
@@ -70,48 +214,39 @@
         if (!container) return;
 
         let filtered = allOrders;
+
         if (currentFilter !== 'all') {
-            // 状态映射：中文筛选条件 → 英文状态值
-            const filterMap = {
-                '待支付': 'pending',
-                '进行中': 'paid',
-                '已完成': 'completed',
-                '已取消': 'cancelled'
-            };
-            const filterStatus = filterMap[currentFilter];
-            if (filterStatus) {
-                filtered = allOrders.filter(o => o.status === filterStatus);
-            } else if (currentFilter === '进行中') {
-                // 进行中包括：paid、preparing、delivering
+            if (currentFilter === 'progress') {
+                // 进行中：paid、preparing、delivering
                 filtered = allOrders.filter(o => ['paid', 'preparing', 'delivering'].includes(o.status));
+            } else {
+                filtered = allOrders.filter(o => o.status === currentFilter);
             }
         }
 
         if (filtered.length === 0) {
-            container.innerHTML = `<div class="empty-orders"><h3>📭 暂无订单</h3><a href=" ">去点餐</a ></div>`;
+            container.innerHTML = `<div class="empty-orders"><h3>📭 暂无订单</h3><a href="menu.html">去点餐</a ></div>`;
             return;
         }
 
         container.innerHTML = filtered.map(order => {
             const statusText = getStatusText(order.status);
             const statusClass = getStatusClass(order.status);
-            // 订单商品名称（最多显示2个）
-            // 注意：列表接口可能不返回items，用orderNo或默认显示
-            const pizzaNames = order.orderNo || `订单号: ${order.orderId}`;
+            const pizzaNames = (order.items || []).map(item => `${item.pizzaName || item.pizza_name} x${item.quantity}`).join('、') || `订单号: ${order.orderId}`;
 
             return `
-                <div class="order-item" onclick="viewOrderDetail(${order.orderId})">
-                    <div class="order-header">
-                        <span class="order-id">订单号：${order.orderId}</span>
-                        <span class="order-date">${formatDate(order.orderTime)}</span>
-                        <span class="order-status ${statusClass}">${statusText}</span>
+                    <div class="order-item" onclick="viewOrderDetail(${order.orderId})">
+                        <div class="order-header">
+                            <span class="order-id">订单号：${order.orderId}</span>
+                            <span class="order-date">${formatDate(order.orderTime || order.order_time)}</span>
+                            <span class="order-status ${statusClass}">${statusText}</span>
+                        </div>
+                        <div class="order-info">
+                            <div class="order-pizzas">🍕 ${pizzaNames}</div>
+                            <div class="order-total">¥${order.totalAmount || order.total_amount}</div>
+                        </div>
                     </div>
-                    <div class="order-info">
-                        <div class="order-pizzas">🍕 ${pizzaNames}</div>
-                        <div class="order-total">¥${order.totalAmount}</div>
-                    </div>
-                </div>
-            `;
+                `;
         }).join('');
     }
 
@@ -119,3 +254,5 @@
         window.location.href = `order_status.html?order_id=${orderId}`;
     }
 </script>
+</body>
+</html>

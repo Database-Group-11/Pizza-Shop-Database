@@ -1,10 +1,197 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>配料库存 - 后台</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .admin-sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 240px;
+            height: 100vh;
+            background: #2c3e50;
+            color: white;
+            padding: 20px 0;
+        }
+        .admin-sidebar h3 {
+            text-align: center;
+            padding: 0 20px 20px;
+            border-bottom: 1px solid #444;
+            margin-bottom: 20px;
+        }
+        .admin-sidebar a {
+            display: block;
+            padding: 12px 24px;
+            color: #ddd;
+            text-decoration: none;
+            transition: 0.2s;
+        }
+        .admin-sidebar a:hover, .admin-sidebar a.active {
+            background: #e74c3c;
+            color: white;
+        }
+        .admin-content {
+            margin-left: 240px;
+            padding: 20px;
+            background: #f5f5f5;
+            min-height: 100vh;
+        }
+        .admin-header {
+            background: white;
+            padding: 16px 24px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .add-btn {
+            background: #27ae60;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        table {
+            width: 100%;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        th {
+            background: #f8f9fa;
+            font-weight: 600;
+        }
+        .stock-input {
+            width: 80px;
+            padding: 6px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            text-align: center;
+        }
+        .btn-sm {
+            padding: 4px 12px;
+            font-size: 12px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            margin: 0 4px;
+        }
+        .btn-edit {
+            background: #3498db;
+            color: white;
+        }
+        .btn-delete {
+            background: #e74c3c;
+            color: white;
+        }
+        .btn-save {
+            background: #27ae60;
+            color: white;
+        }
+        .low-stock {
+            color: #e67e22;
+            font-weight: bold;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: white;
+            padding: 24px;
+            border-radius: 16px;
+            width: 400px;
+        }
+        .modal-content input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+        .modal-buttons button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+<div class="admin-sidebar">
+    <h3>🍕 披萨后台</h3>
+    <a href=" ">📋 订单管理</a >
+    <a href="admin_inventory.html" class="active">📦 配料库存</a >
+    <a href="admin_reports.html">📊 数据报表</a >
+    <a href="menu.html" style="margin-top: 50px;">🏠 返回前台</a >
+    <a href="#" id="adminLogoutBtn">🚪 退出登录</a >
+</div>
+
+<div class="admin-content">
+    <div class="admin-header">
+        <h2>配料库存管理</h2>
+        <button class="add-btn" onclick="openAddModal()">+ 新增配料</button>
+    </div>
+
+    </table>
+    <thead>
+    <tr><th>ID</th><th>配料名称</th><th>价格(元)</th><th>库存数量</th><th>状态</th><th>操作</th></tr>
+    </thead>
+    <tbody id="toppingsTableBody">
+    <tr><td colspan="6" style="text-align:center;">加载中...</td></tr>
+    </tbody>
+    </table>
+</div>
+
+<!-- 新增/编辑弹窗 -->
+<div id="modal" class="modal">
+    <div class="modal-content">
+        <h3 id="modalTitle">新增配料</h3>
+        <input type="text" id="toppingName" placeholder="配料名称">
+        <input type="number" id="toppingPrice" placeholder="价格(元)" step="0.5">
+        <input type="number" id="toppingStock" placeholder="库存数量">
+        <div class="modal-buttons">
+            <button class="btn-save" onclick="saveTopping()">保存</button>
+            <button class="btn-delete" onclick="closeModal()">取消</button>
+        </div>
+    </div>
+</div>
+
+<script src="js/main.js"></script>
 <script>
     let toppings = [];
     let editId = null;
 
     function checkAdminAuth() {
         const token = localStorage.getItem('adminToken');
-        if (!token) window.location.href = 'admin_login.html';
+        if (!token) {
+            window.location.href = 'admin_login.html';
+        }
     }
     checkAdminAuth();
 
@@ -12,64 +199,91 @@
         try {
             const response = await fetch(`${API_BASE}/admin/toppings`);
             const result = await response.json();
+            console.log('配料列表:', result);
+
             if (result.code === 200) {
                 toppings = result.data;
                 renderTable();
+            } else {
+                console.error('加载配料失败:', result.message);
             }
         } catch (error) {
-            console.error('加载配料失败:', error);
+            console.error('网络错误:', error);
+            // 使用模拟数据
+            toppings = [
+                { toppingId: 1, name: '加芝士', price: 8, stockQuantity: 100 },
+                { toppingId: 2, name: '培根', price: 10, stockQuantity: 50 },
+                { toppingId: 3, name: '蘑菇', price: 6, stockQuantity: 80 },
+                { toppingId: 4, name: '青椒', price: 5, stockQuantity: 15 },
+                { toppingId: 5, name: '玉米', price: 5, stockQuantity: 70 },
+                { toppingId: 6, name: '洋葱', price: 4, stockQuantity: 90 }
+            ];
+            renderTable();
         }
     }
 
     function renderTable() {
         const tbody = document.getElementById('toppingsTableBody');
+        if (!tbody) return;
+
+        if (toppings.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">暂无数据</td></tr>';
+            return;
+        }
+
         tbody.innerHTML = toppings.map(t => {
-            const isLowStock = t.stockQuantity < 20;
+            const toppingId = t.toppingId || t.topping_id;
+            const name = t.name;
+            const price = t.price;
+            const stock = t.stockQuantity || t.stock_quantity;
+            const isLowStock = stock < 20;
+
             return `
-                <tr>
-                    <td>${t.toppingId}</td>
-                    <td>${t.name}</td>
-                    <td>¥${t.price}</td>
-                    <td>
-                        <input type="number" class="stock-input" id="stock_${t.toppingId}" value="${t.stockQuantity}" min="0">
-                    </td>
-                    <td class="${isLowStock ? 'low-stock' : ''}">${isLowStock ? '⚠️ 库存不足' : '充足'}</td>
-                    <td>
-                        <button class="btn-sm btn-edit" onclick="updateStock(${t.toppingId})">更新库存</button>
-                        <button class="btn-sm btn-delete" onclick="deleteTopping(${t.toppingId})">删除</button>
-                    </td>
-                </tr>
-            `;
+                    <tr>
+                        <td>${toppingId}</td>
+                        <td>${name}</td>
+                        <td>¥${price}</td>
+                        <td>
+                            <input type="number" class="stock-input" id="stock_${toppingId}" value="${stock}" min="0">
+                        </td>
+                        <td class="${isLowStock ? 'low-stock' : ''}">${isLowStock ? '⚠️ 库存不足' : '充足'}</td>
+                        <td>
+                            <button class="btn-sm btn-edit" onclick="updateStock(${toppingId})">更新库存</button>
+                            <button class="btn-sm btn-delete" onclick="deleteTopping(${toppingId})">删除</button>
+                        </td>
+                    </tr>
+                `;
         }).join('');
     }
 
     async function updateStock(toppingId) {
         const input = document.getElementById(`stock_${toppingId}`);
         const newStock = parseInt(input.value);
-        const topping = toppings.find(t => t.toppingId === toppingId);
+        const topping = toppings.find(t => (t.toppingId || t.topping_id) === toppingId);
 
-        if (topping) {
-            try {
-                const response = await fetch(`${API_BASE}/admin/toppings/${toppingId}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        name: topping.name,
-                        price: topping.price,
-                        stockQuantity: newStock,
-                        available: true
-                    })
-                });
-                const result = await response.json();
-                if (result.code === 200) {
-                    alert('库存已更新');
-                    loadToppings();
-                } else {
-                    alert(result.message || '更新失败');
-                }
-            } catch (error) {
-                alert('网络错误');
+        if (!topping) return;
+
+        try {
+            const response = await fetch(`${API_BASE}/admin/toppings/${toppingId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: topping.name,
+                    price: topping.price,
+                    stockQuantity: newStock,
+                    available: true
+                })
+            });
+            const result = await response.json();
+            if (result.code === 200) {
+                alert('库存已更新');
+                loadToppings();
+            } else {
+                alert(result.message || '更新失败');
             }
+        } catch (error) {
+            console.error('更新失败:', error);
+            alert('网络错误，请稍后重试');
         }
     }
 
@@ -88,6 +302,7 @@
                 alert(result.message || '删除失败');
             }
         } catch (error) {
+            console.error('删除失败:', error);
             alert('网络错误');
         }
     }
@@ -130,6 +345,7 @@
                 alert(result.message || '添加失败');
             }
         } catch (error) {
+            console.error('添加失败:', error);
             alert('网络错误');
         }
     }
@@ -143,3 +359,5 @@
 
     loadToppings();
 </script>
+</body>
+</html>

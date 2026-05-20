@@ -1,3 +1,68 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>订单状态 - 披萨外卖系统</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .status-container { max-width: 800px; margin: 0 auto; }
+        .order-card { background: white; border-radius: 16px; padding: 24px; margin-bottom: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .order-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; padding-bottom: 16px; border-bottom: 1px solid #eee; margin-bottom: 16px; }
+        .order-id { font-size: 18px; font-weight: bold; color: #333; }
+        .order-status { padding: 6px 16px; border-radius: 30px; font-size: 14px; font-weight: 500; }
+        .status-pending { background: #f39c12; color: white; }
+        .status-paid { background: #3498db; color: white; }
+        .status-preparing { background: #e67e22; color: white; }
+        .status-delivering { background: #9b59b6; color: white; }
+        .status-completed { background: #27ae60; color: white; }
+        .status-cancelled { background: #e74c3c; color: white; }
+
+        .progress-steps { display: flex; justify-content: space-between; margin: 20px 0; position: relative; }
+        .progress-steps::before { content: ''; position: absolute; top: 24px; left: 10%; right: 10%; height: 3px; background: #e0e0e0; z-index: 1; }
+        .step { position: relative; z-index: 2; text-align: center; flex: 1; }
+        .step-circle { width: 48px; height: 48px; background: #e0e0e0; border-radius: 50%; margin: 0 auto 8px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+        .step.active .step-circle { background: #e74c3c; color: white; }
+        .step.completed .step-circle { background: #27ae60; color: white; }
+        .step-label { font-size: 12px; color: #666; }
+        .step.active .step-label { color: #e74c3c; font-weight: 500; }
+
+        .info-row { display: flex; padding: 10px 0; border-bottom: 1px solid #f0f0f0; }
+        .info-label { width: 100px; color: #666; }
+        .info-value { flex: 1; color: #333; }
+        .items-list { margin: 16px 0; }
+        .item-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f0f0f0; }
+        .item-name { flex: 2; }
+        .item-toppings { font-size: 12px; color: #999; margin-top: 4px; }
+        .item-qty { width: 60px; text-align: center; }
+        .item-price { width: 80px; text-align: right; color: #e74c3c; }
+        .action-buttons { display: flex; gap: 16px; margin-top: 24px; flex-wrap: wrap; }
+        .btn-pay { background: #e74c3c; color: white; border: none; padding: 12px 24px; border-radius: 30px; cursor: pointer; }
+        .btn-cancel { background: #95a5a6; color: white; border: none; padding: 12px 24px; border-radius: 30px; cursor: pointer; }
+        .btn-back { background: #3498db; color: white; border: none; padding: 12px 24px; border-radius: 30px; cursor: pointer; }
+        .delivery-info { background: #f8f9fa; border-radius: 12px; padding: 16px; margin-top: 16px; }
+        @media (max-width: 600px) { .step-circle { width: 36px; height: 36px; font-size: 14px; } }
+    </style>
+</head>
+<body>
+<nav class="navbar">
+    <a href=" " class="navbar-brand">🍕 披萨外卖</a >
+    <div class="navbar-menu">
+        <a href="menu.html">菜单</a >
+        <a href="cart.html">购物车 <span id="cartCount" class="cart-badge">0</span></a >
+        <a href="order_history.html">我的订单</a >
+        <span id="userNameDisplay" style="color:#666;"></span>
+        <a href="#" id="logoutBtn">退出</a >
+    </div>
+</nav>
+
+<div class="container status-container">
+    <h1 style="margin-bottom: 24px;">📦 订单详情</h1>
+    <div id="orderContent">
+        <div style="text-align:center; padding:40px;">加载中...</div>
+    </div>
+</div>
+
 <script src="js/main.js"></script>
 <script>
     let currentOrder = null;
@@ -48,6 +113,8 @@
         try {
             const response = await fetch(`${API_BASE}/orders/${orderId}`);
             const result = await response.json();
+            console.log('订单详情:', result);
+
             if (result.code === 200) {
                 currentOrder = result.data;
                 renderOrderDetail(currentOrder);
@@ -58,7 +125,7 @@
             }
         } catch (error) {
             console.error('加载订单失败:', error);
-            alert('网络错误，请稍后重试');
+            document.getElementById('orderContent').innerHTML = '<div style="text-align:center; padding:40px; color:#e74c3c;">加载失败，请检查网络</div>';
         }
     }
 
@@ -82,15 +149,15 @@
                     }
                 }
                 itemsHtml += `
-                    <div class="item-row">
-                        <div class="item-name">
-                            🍕 ${item.pizzaName}
-                            <div class="item-toppings">${toppingsHtml || '无配料'}</div>
+                        <div class="item-row">
+                            <div class="item-name">
+                                🍕 ${item.pizzaName || item.pizza_name}
+                                <div class="item-toppings">${toppingsHtml || '无配料'}</div>
+                            </div>
+                            <div class="item-qty">x${item.quantity}</div>
+                            <div class="item-price">¥${item.subtotal || item.price || (item.unitPrice * item.quantity)}</div>
                         </div>
-                        <div class="item-qty">x${item.quantity}</div>
-                        <div class="item-price">¥${item.subtotal || item.unitPrice * item.quantity}</div>
-                    </div>
-                `;
+                    `;
             }
         }
 
@@ -106,58 +173,49 @@
 
         // 进度条
         const stepsHtml = (order.status !== 'completed' && order.status !== 'cancelled') ? `
-            <div class="progress-steps">
-                ${['提交订单', '确认支付', '配送中', '已完成'].map((label, idx) => `<div class="step" data-step="${idx}"><div class="step-circle">${idx === 0 ? '📝' : idx === 1 ? '💳' : idx === 2 ? '🚚' : '✅'}</div><div class="step-label">${label}</div></div>`).join('')}
-            </div>
-        ` : '';
+                <div class="progress-steps">
+                    ${['提交订单', '确认支付', '配送中', '已完成'].map((label, idx) => `<div class="step" data-step="${idx}"><div class="step-circle">${idx === 0 ? '📝' : idx === 1 ? '💳' : idx === 2 ? '🚚' : '✅'}</div><div class="step-label">${label}</div></div>`).join('')}
+                </div>
+            ` : '';
 
         // 支付信息
-        const paymentHtml = order.payment ? `
-            <div class="info-row">
-                <div class="info-label">支付方式</div>
-                <div class="info-value">${order.payment.paymentMethod || order.paymentMethod}</div>
-            </div>
-            <div class="info-row">
-                <div class="info-label">支付状态</div>
-                <div class="info-value">${order.payment.status === 'completed' ? '已支付' : order.payment.status}</div>
-            </div>
-        ` : `
-            <div class="info-row">
-                <div class="info-label">支付方式</div>
-                <div class="info-value">${order.paymentMethod || '待选择'}</div>
-            </div>
-            <div class="info-row">
-                <div class="info-label">支付状态</div>
-                <div class="info-value">${order.payment ? order.payment.status : '待支付'}</div>
-            </div>
-        `;
+        const paymentHtml = `
+                <div class="info-row">
+                    <div class="info-label">支付方式</div>
+                    <div class="info-value">${order.paymentMethod || order.payment_method || '待选择'}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">支付状态</div>
+                    <div class="info-value">${order.paymentStatus || order.payment_status || '待支付'}</div>
+                </div>
+            `;
 
         // 配送信息
         const deliveryHtml = order.delivery ? `
-            <div class="delivery-info" style="background:#f8f9fa; border-radius:12px; padding:16px; margin-top:16px;">
-                <div class="info-row"><div class="info-label">骑手姓名</div><div class="info-value">${order.delivery.riderName || '待分配'}</div></div>
-                <div class="info-row"><div class="info-label">骑手电话</div><div class="info-value">${order.delivery.riderPhone || '--'}</div></div>
-                <div class="info-row"><div class="info-label">开始配送</div><div class="info-value">${order.delivery.startTime ? formatDate(order.delivery.startTime) : '--'}</div></div>
-                <div class="info-row"><div class="info-label">预计送达</div><div class="info-value">${order.delivery.estimatedDeliveryTime ? formatDate(order.delivery.estimatedDeliveryTime) : '--'}</div></div>
-            </div>
-        ` : '';
+                <div class="delivery-info">
+                    <div class="info-row"><div class="info-label">骑手姓名</div><div class="info-value">${order.delivery.riderName || order.delivery.rider_name || '待分配'}</div></div>
+                    <div class="info-row"><div class="info-label">骑手电话</div><div class="info-value">${order.delivery.riderPhone || order.delivery.rider_phone || '--'}</div></div>
+                    <div class="info-row"><div class="info-label">开始配送</div><div class="info-value">${formatDate(order.delivery.startTime || order.delivery.start_time) || '--'}</div></div>
+                    <div class="info-row"><div class="info-label">预计送达</div><div class="info-value">${formatDate(order.delivery.estimatedDeliveryTime) || '--'}</div></div>
+                </div>
+            ` : '';
 
         container.innerHTML = `
-            <div class="order-card">
-                <div class="order-header">
-                    <span class="order-id">订单号：${order.orderId}</span>
-                    <span class="order-status ${statusClass}">${statusText}</span>
+                <div class="order-card">
+                    <div class="order-header">
+                        <span class="order-id">订单号：${order.orderId || order.order_id}</span>
+                        <span class="order-status ${statusClass}">${statusText}</span>
+                    </div>
+                    ${stepsHtml}
+                    <div class="items-list"><h4 style="margin-bottom:12px;">商品清单</h4>${itemsHtml || '<div>暂无商品</div>'}</div>
+                    <div class="info-row"><div class="info-label">下单时间</div><div class="info-value">${formatDate(order.orderTime || order.order_time)}</div></div>
+                    <div class="info-row"><div class="info-label">配送地址</div><div class="info-value">${order.deliveryAddress || order.delivery_address}</div></div>
+                    ${paymentHtml}
+                    <div class="info-row"><div class="info-label">订单总额</div><div class="info-value" style="font-size:20px; font-weight:bold; color:#e74c3c;">¥${order.totalAmount || order.total_amount}</div></div>
+                    ${deliveryHtml}
+                    <div class="action-buttons">${buttonsHtml}</div>
                 </div>
-                ${stepsHtml}
-                <div class="items-list"><h4 style="margin-bottom:12px;">商品清单</h4>${itemsHtml}</div>
-                <div class="info-row"><div class="info-label">下单时间</div><div class="info-value">${formatDate(order.orderTime)}</div></div>
-                <div class="info-row"><div class="info-label">配送地址</div><div class="info-value">${order.deliveryAddress}</div></div>
-                ${paymentHtml}
-                <div class="info-row"><div class="info-label">订单总额</div><div class="info-value" style="font-size:20px; font-weight:bold; color:#e74c3c;">¥${order.totalAmount}</div></div>
-                ${deliveryHtml}
-                <div class="action-buttons">${buttonsHtml}</div>
-            </div>
-        `;
+            `;
 
         if (order.status !== 'completed' && order.status !== 'cancelled') {
             updateProgressBar(order.status);
@@ -166,7 +224,7 @@
 
     function updateProgressBar(status) {
         const stepMap = { 'pending': 0, 'paid': 1, 'preparing': 1, 'delivering': 2, 'completed': 3 };
-        let stepIndex = stepMap[status] || 0;
+        const stepIndex = stepMap[status] || 0;
         const steps = document.querySelectorAll('.step');
         steps.forEach((step, idx) => {
             step.classList.remove('active', 'completed');
@@ -194,6 +252,7 @@
                 alert(result.message || '支付失败');
             }
         } catch (error) {
+            console.error('支付失败:', error);
             alert('支付失败，请稍后重试');
         }
     }
@@ -214,29 +273,29 @@
                 alert(result.message || '取消失败');
             }
         } catch (error) {
+            console.error('取消失败:', error);
             alert('取消失败，请稍后重试');
         }
     }
 
     function reorder(orderId) {
-        // 从当前订单获取商品信息，添加到购物车
         if (currentOrder && currentOrder.items) {
             const cart = getCart();
             for (const item of currentOrder.items) {
                 const toppings = (item.toppings || []).map(t => ({
-                    toppingId: t.toppingId,
+                    toppingId: t.toppingId || t.topping_id,
                     name: t.name,
                     price: t.price,
                     quantity: t.quantity
                 }));
                 cart.push({
                     id: Date.now() + Math.random(),
-                    pizzaId: item.pizzaId,
-                    pizzaName: item.pizzaName,
-                    basePrice: item.unitPrice,
+                    pizzaId: item.pizzaId || item.pizza_id,
+                    pizzaName: item.pizzaName || item.pizza_name,
+                    basePrice: item.unitPrice || item.base_price,
                     toppings: toppings,
                     quantity: item.quantity,
-                    total: item.subtotal
+                    total: item.subtotal || item.total
                 });
             }
             saveCart(cart);
@@ -249,9 +308,8 @@
 
     function startPolling(orderId) {
         stopPolling();
-        // 每5秒轮询一次订单状态
         pollingInterval = setInterval(() => {
-            if (currentOrder && (currentOrder.status === 'pending' || currentOrder.status === 'paid' || currentOrder.status === 'preparing' || currentOrder.status === 'delivering')) {
+            if (currentOrder && ['pending', 'paid', 'preparing', 'delivering'].includes(currentOrder.status)) {
                 loadOrderDetail(orderId);
             } else {
                 stopPolling();
@@ -271,3 +329,5 @@
     window.reorder = reorder;
     window.goToOrderHistory = goToOrderHistory;
 </script>
+</body>
+</html>

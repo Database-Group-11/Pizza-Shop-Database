@@ -4,7 +4,11 @@
     <option name="state">
       <map>
         <entry key="file://$PROJECT_DIR$/pizza-order-system/web/admin_login.html" value="file://$PROJECT_DIR$/pizza-order-system/web" />
+        <entry key="file://$PROJECT_DIR$/pizza-order-system/web/cart.html" value="file://$PROJECT_DIR$/pizza-order-system/web" />
+        <entry key="file://$PROJECT_DIR$/pizza-order-system/web/checkout.html" value="file://$PROJECT_DIR$/pizza-order-system/web" />
         <entry key="file://$PROJECT_DIR$/pizza-order-system/web/login.html" value="file://$PROJECT_DIR$/pizza-order-system/web" />
+        <entry key="file://$PROJECT_DIR$/pizza-order-system/web/menu.html" value="file://$PROJECT_DIR$/pizza-order-system/web" />
+        <entry key="file://$PROJECT_DIR$/pizza-order-system/web/order_status.html" value="file://$PROJECT_DIR$/pizza-order-system/web" />
         <entry key="file://$PROJECT_DIR$/pizza-order-system/web/register.html" value="file://$PROJECT_DIR$/pizza-order-system/web" />
       </map>
     </option>

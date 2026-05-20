@@ -1,5 +1,5 @@
 // ========== API 配置 ==========
-const API_BASE = 'http://localhost:8080/api';
+const API_BASE = 'http://localhost:8080';
 
 // ========== 登录页面逻辑 ==========
 if (document.getElementById('loginForm')) {

@@ -1,3 +1,60 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>菜单 - 披萨外卖系统</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .category-btn {
+            padding: 8px 20px;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        .category-btn:hover {
+            border-color: #e74c3c;
+            color: #e74c3c;
+        }
+        .category-btn.active {
+            background: #e74c3c;
+            color: white;
+            border-color: #e74c3c;
+        }
+    </style>
+</head>
+<body>
+<!-- 导航栏 -->
+<nav class="navbar">
+    <a href=" " class="navbar-brand">🍕 披萨外卖</a >
+    <div class="navbar-menu">
+        <a href="menu.html">菜单</a >
+        <a href="cart.html">购物车 <span id="cartCount" class="cart-badge">0</span></a >
+        <a href="order_history.html">我的订单</a >
+        <span id="userNameDisplay" style="color:#666;"></span>
+        <a href="#" id="logoutBtn">退出</a >
+    </div>
+</nav>
+
+<div class="container">
+    <!-- 分类筛选 -->
+    <div style="margin-bottom: 24px; display: flex; gap: 12px; flex-wrap: wrap;">
+        <button class="category-btn active" data-category="all">全部</button>
+        <button class="category-btn" data-category="Classic">经典</button>
+        <button class="category-btn" data-category="Meat">肉类</button>
+        <button class="category-btn" data-category="Vegetarian">素食</button>
+        <button class="category-btn" data-category="Seafood">海鲜</button>
+    </div>
+
+    <!-- 披萨列表网格 -->
+    <div id="pizzaGrid" class="grid">
+        <div style="text-align:center; padding:40px;">加载中...</div>
+    </div>
+</div>
+
 <script src="js/main.js"></script>
 <script>
     let currentCategory = 'all';
@@ -45,9 +102,15 @@
     }
 
     async function loadPizzas() {
+
+        const grid = document.getElementById('pizzaGrid');
+        grid.innerHTML = '<div style="text-align:center; padding:40px;">加载中...</div>';
+
         try {
             const response = await fetch(`${API_BASE}/pizzas`);
             const result = await response.json();
+            console.log('披萨数据:', result);
+
             if (result.code === 200) {
                 let pizzas = result.data;
                 if (currentCategory !== 'all') {
@@ -55,10 +118,11 @@
                 }
                 renderPizzas(pizzas);
             } else {
-                console.error('加载披萨失败:', result.message);
+                grid.innerHTML = `<div style="text-align:center; padding:40px; color:#e74c3c;">加载失败：${result.message}</div>`;
             }
         } catch (error) {
             console.error('网络错误:', error);
+            grid.innerHTML = '<div style="text-align:center; padding:40px; color:#e74c3c;">网络错误，请检查后端是否启动</div>';
         }
     }
 
@@ -72,19 +136,21 @@
         }
 
         grid.innerHTML = pizzas.map(pizza => `
-            <div class="pizza-card">
-                < img src="${pizza.image || 'https://picsum.photos/id/106/300/200'}" alt="${pizza.name}">
-                <div class="info">
-                    <h3>${pizza.name}</h3>
-                    <div class="desc">${pizza.description || ''}</div>
-                    <div class="price">¥${pizza.basePrice}</div>
-                    <button onclick="viewPizzaDetail(${pizza.pizzaId})">定制 & 加入购物车</button>
+                <div class="pizza-card">
+                    < img src="${pizza.image || 'https://picsum.photos/id/106/300/200'}" alt="${pizza.name}">
+                    <div class="info">
+                        <h3>${pizza.name}</h3>
+                        <div class="desc">${pizza.description || ''}</div>
+                        <div class="price">¥${pizza.basePrice || pizza.base_price}</div>
+                        <button onclick="viewPizzaDetail(${pizza.pizzaId || pizza.pizza_id})">定制 & 加入购物车</button>
+                    </div>
                 </div>
-            </div>
-        `).join('');
+            `).join('');
     }
 
     function viewPizzaDetail(pizzaId) {
         window.location.href = `pizza_detail.html?pizza_id=${pizzaId}`;
     }
 </script>
+</body>
+</html>
