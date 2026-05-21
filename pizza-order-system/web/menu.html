@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>菜单 - 披萨外卖系统</title>
+    <title>menu - pizza-shop takeout system</title>
     <link rel="stylesheet" href="css/style.css">
     <style>
         .category-btn {
@@ -29,29 +29,29 @@
 <body>
 <!-- 导航栏 -->
 <nav class="navbar">
-    <a href=" " class="navbar-brand">🍕 披萨外卖</a >
+    <a href=" " class="navbar-brand">🍕 pizza-shop takeout</a >
     <div class="navbar-menu">
-        <a href="menu.html">菜单</a >
-        <a href="cart.html">购物车 <span id="cartCount" class="cart-badge">0</span></a >
-        <a href="order_history.html">我的订单</a >
+        <a href="menu.html">menu</a >
+        <a href="cart.html">cart <span id="cartCount" class="cart-badge">0</span></a >
+        <a href="order_history.html">my order</a >
         <span id="userNameDisplay" style="color:#666;"></span>
-        <a href="#" id="logoutBtn">退出</a >
+        <a href="#" id="logoutBtn">exit</a >
     </div>
 </nav>
 
 <div class="container">
     <!-- 分类筛选 -->
     <div style="margin-bottom: 24px; display: flex; gap: 12px; flex-wrap: wrap;">
-        <button class="category-btn active" data-category="all">全部</button>
-        <button class="category-btn" data-category="Classic">经典</button>
-        <button class="category-btn" data-category="Meat">肉类</button>
-        <button class="category-btn" data-category="Vegetarian">素食</button>
-        <button class="category-btn" data-category="Seafood">海鲜</button>
+        <button class="category-btn active" data-category="all">all</button>
+        <button class="category-btn" data-category="Classic">classic</button>
+        <button class="category-btn" data-category="Meat">meat</button>
+        <button class="category-btn" data-category="Vegetarian">vegetarian</button>
+        <button class="category-btn" data-category="Seafood">seafood</button>
     </div>
 
     <!-- 披萨列表网格 -->
     <div id="pizzaGrid" class="grid">
-        <div style="text-align:center; padding:40px;">加载中...</div>
+        <div style="text-align:center; padding:40px;">loading...</div>
     </div>
 </div>
 
@@ -113,7 +113,7 @@
 
             const response = await fetch(url);
             const result = await response.json();
-            console.log('披萨数据:', result);
+            console.log('pizza data:', result);
 
             if (result.code === 200) {
                 let pizzas = result.data;
@@ -126,8 +126,8 @@
                 grid.innerHTML = `<div style="text-align:center; padding:40px; color:#e74c3c;">fail to load：${result.message}</div>`;
             }
         } catch (error) {
-            console.error('网络错误:', error);
-            grid.innerHTML = '<div style="text-align:center; padding:40px; color:#e74c3c;">internet error，请检查后端</div>';
+            console.error('internet error:', error);
+            grid.innerHTML = '<div style="text-align:center; padding:40px; color:#e74c3c;">internet error，please check back-end</div>';
         }
     }
 
