@@ -36,7 +36,8 @@ if (document.getElementById('loginForm')) {
             const response = await fetch(`${API_BASE}/customer/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ phone, password })
+                body: JSON.stringify({ phone, password }),
+                credentials: 'include'
             });
             const result = await response.json();
             if (result.code === 200) {
@@ -107,19 +108,28 @@ function saveCart(cart) {
 function addToCart(pizza, selectedToppings, quantity) {
     const cart = getCart();
 
+    // 确保 pizzaId 存在（兼容 pizza_id 和 pizzaId 两种格式）
+    const pizzaId = pizza.pizzaId || pizza.pizza_id;
+
+    console.log('添加购物车 - pizza:', pizza);
+    console.log('添加购物车 - pizzaId:', pizzaId);
+
     // 计算配料总价
     const toppingsTotal = selectedToppings.reduce((sum, t) => sum + (t.price * t.quantity), 0);
-    const itemTotal = (pizza.basePrice + toppingsTotal) * quantity;
+    const basePrice = pizza.basePrice || pizza.base_price || 0;
+    const itemTotal = (basePrice + toppingsTotal) * quantity;
 
     const cartItem = {
         id: Date.now(),
-        pizzaId: pizza.pizzaId,
+        pizzaId: pizzaId,                    // ← 关键：必须保存 pizzaId
         pizzaName: pizza.name,
-        basePrice: pizza.basePrice,
+        basePrice: basePrice,
         toppings: selectedToppings,
         quantity: quantity,
         total: itemTotal
     };
+
+    console.log('添加到购物车的商品:', cartItem);
 
     cart.push(cartItem);
     saveCart(cart);

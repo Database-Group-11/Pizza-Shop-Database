@@ -70,15 +70,9 @@ public class OrderServlet extends HttpServlet {
         BufferedReader reader = req.getReader();
         OrderCreateRequest orderReq = gson.fromJson(reader, OrderCreateRequest.class);
         // 验证登录状态
-        HttpSession session = req.getSession(false);
-        if (session == null || session.getAttribute("userId") == null) {
+        int userId = orderReq.getCustomerId();
+        if (userId <= 0) {
             resp.getWriter().write(gson.toJson(Result.error(401, "请先登录")));
-            return;
-        }
-
-        int userId = (int) session.getAttribute("userId");
-        if (userId != orderReq.getCustomerId()) {
-            resp.getWriter().write(gson.toJson(Result.error(403, "无权操作")));
             return;
         }
 

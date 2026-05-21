@@ -119,6 +119,9 @@
                 console.log('找到的披萨:', currentPizza);
 
                 if (currentPizza) {
+                    if (currentPizza.base_price && !currentPizza.basePrice) {
+                        currentPizza.basePrice = currentPizza.base_price;
+                    }
                     renderPizzaInfo();
                     loadToppings();
                 } else {
@@ -250,6 +253,9 @@
 
     function addCurrentToCart() {
         if (!currentPizza) return;
+        console.log('currentPizza:', currentPizza);
+        console.log('currentPizza.basePrice:', currentPizza.basePrice);
+        console.log('selectedToppings:', selectedToppings);
         const toppingsCopy = selectedToppings.map(t => ({ ...t }));
         addToCart(currentPizza, toppingsCopy, currentQuantity);
         updateCartCount();

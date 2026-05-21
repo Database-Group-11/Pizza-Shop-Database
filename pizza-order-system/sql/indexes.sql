@@ -1,12 +1,12 @@
--- 加速顾客查询
+-- Customers searching
 CREATE INDEX idx_customer_phone ON customers(phone);
 
--- 加速订单查询（按顾客查订单历史）
+-- Orders searching
 CREATE INDEX idx_order_customer ON orders(customer_id);
 CREATE INDEX idx_order_time ON orders(order_time);
 
--- 加速订单项查询
+-- Order items searching
 CREATE INDEX idx_orderitem_order ON order_items(order_id);
 
--- 加速配送状态查询
+-- Deliveries searching
 CREATE INDEX idx_delivery_status ON deliveries(status);

@@ -41,6 +41,9 @@ public class CustomerServlet extends HttpServlet {
     }
 
     private void handleLogin(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        resp.setHeader("Access-Control-Allow-Origin", "http://localhost:8080");
+        resp.setHeader("Access-Control-Allow-Credentials", "true");
+
         BufferedReader reader = req.getReader();
         CustomerLoginRequest loginReq = gson.fromJson(reader, CustomerLoginRequest.class);
 
@@ -54,6 +57,9 @@ public class CustomerServlet extends HttpServlet {
         if (customer != null) {
             HttpSession session = req.getSession();
             session.setAttribute("userId", customer.getCustomerId());
+
+            System.out.println("Session ID: " + session.getId());
+
             session.setAttribute("userName", customer.getName());
 
             CustomerLoginResponse response = new CustomerLoginResponse();

@@ -1,10 +1,7 @@
--- 创建数据库（如需要）
 -- CREATE DATABASE IF NOT EXISTS pizza_shop DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 -- USE pizza_shop;
 
--- ============================================
--- 1. 顾客表 (Customer)
--- ============================================
+-- 1. Customer
 CREATE TABLE customers (
                            customer_id INT PRIMARY KEY AUTO_INCREMENT,
                            name VARCHAR(100) NOT NULL,
@@ -15,9 +12,7 @@ CREATE TABLE customers (
                            update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
--- ============================================
--- 2. 披萨表 (Pizza)
--- ============================================
+-- 2. Pizza
 CREATE TABLE pizzas (
                         pizza_id INT PRIMARY KEY AUTO_INCREMENT,
                         name VARCHAR(100) NOT NULL,
@@ -33,9 +28,7 @@ CREATE TABLE pizzas (
                         update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
--- ============================================
--- 3. 配料表 (Topping)
--- ============================================
+-- 3. Topping
 CREATE TABLE toppings (
                           topping_id INT PRIMARY KEY AUTO_INCREMENT,
                           name VARCHAR(100) NOT NULL,
@@ -46,9 +39,7 @@ CREATE TABLE toppings (
                           update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
--- ============================================
--- 4. 订单表 (Order)
--- ============================================
+-- 4. Order
 CREATE TABLE orders (
                         order_id INT PRIMARY KEY AUTO_INCREMENT,
                         order_no VARCHAR(50) UNIQUE NOT NULL,
@@ -63,9 +54,7 @@ CREATE TABLE orders (
                         FOREIGN KEY (customer_id) REFERENCES customers(customer_id)
 );
 
--- ============================================
--- 5. 订单项表 (OrderItem)
--- ============================================
+-- 5. OrderItem
 CREATE TABLE order_items (
                              item_id INT PRIMARY KEY AUTO_INCREMENT,
                              order_id INT NOT NULL,
@@ -77,9 +66,7 @@ CREATE TABLE order_items (
                              FOREIGN KEY (pizza_id) REFERENCES pizzas(pizza_id)
 );
 
--- ============================================
--- 6. 订单配料关联表 (OrderTopping)
--- ============================================
+-- 6. OrderTopping
 CREATE TABLE order_toppings (
                                 item_id INT NOT NULL,
                                 topping_id INT NOT NULL,
@@ -89,9 +76,7 @@ CREATE TABLE order_toppings (
                                 FOREIGN KEY (topping_id) REFERENCES toppings(topping_id)
 );
 
--- ============================================
--- 7. 支付表 (Payment)
--- ============================================
+-- 7. Payment
 CREATE TABLE payments (
                           payment_id INT PRIMARY KEY AUTO_INCREMENT,
                           order_id INT NOT NULL UNIQUE,
@@ -104,9 +89,7 @@ CREATE TABLE payments (
                           FOREIGN KEY (order_id) REFERENCES orders(order_id) ON DELETE CASCADE
 );
 
--- ============================================
--- 8. 配送表 (Delivery)
--- ============================================
+-- 8. Delivery
 CREATE TABLE deliveries (
                             delivery_id INT PRIMARY KEY AUTO_INCREMENT,
                             order_id INT NOT NULL UNIQUE,
