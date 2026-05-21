@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>定制披萨 - 披萨外卖系统</title>
+    <title>pizza-shop takeout system</title>
     <link rel="stylesheet" href="css/style.css">
     <style>
         .pizza-info { background: white; border-radius: 16px; padding: 24px; margin-bottom: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
@@ -144,7 +144,6 @@
         const image = currentPizza.image || 'https://picsum.photos/id/106/300/200';
 
         container.innerHTML = `
-
                 <h2>${name}</h2>
                 <p style="color:#666; margin:8px 0;">${description}</p >
                 <div class="price">basic price：¥${price.toFixed(2)}</div>
@@ -161,7 +160,7 @@
             }
         } catch (error) {
             console.error('fail to load toppings:', error);
-            document.getElementById('toppingsList').innerHTML = '<div>加载配料失败</div>';
+            document.getElementById('toppingsList').innerHTML = '<div>fail to load the toppings</div>';
         }
     }
 
@@ -189,7 +188,7 @@
                             <span class="topping-price">+¥${price}</span>
                         </div>
                         <div class="topping-quantity">
-                            <label>数量:</label>
+                            <label>quantity:</label>
                             <input type="number" class="topping-quantity-input"
                                    data-id="${toppingId}"
                                    value="1" min="1" max="10"

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>购物车 - 披萨外卖系统</title>
+    <title>cart - pizza-shop takeout system</title>
     <link rel="stylesheet" href="css/style.css">
     <style>
         .cart-container {
@@ -169,18 +169,18 @@
 <body>
 <!-- 导航栏 -->
 <nav class="navbar">
-    <a href=" " class="navbar-brand">🍕 披萨外卖</a >
+    <a href=" " class="navbar-brand">🍕 pizza-shop takeout</a >
     <div class="navbar-menu">
-        <a href="menu.html">菜单</a >
-        <a href="cart.html">购物车 <span id="cartCount" class="cart-badge">0</span></a >
-        <a href="order_history.html">我的订单</a >
+        <a href="menu.html">menu</a >
+        <a href="cart.html">cart <span id="cartCount" class="cart-badge">0</span></a >
+        <a href="order_history.html">my order</a >
         <span id="userNameDisplay" style="color:#666;"></span>
-        <a href="#" id="logoutBtn">退出</a >
+        <a href="#" id="logoutBtn">exit</a >
     </div>
 </nav>
 
 <div class="container cart-container">
-    <h1 style="margin-bottom: 24px;">🛒 购物车</h1>
+    <h1 style="margin-bottom: 24px;">🛒 cart</h1>
     <div id="cartContent">
         <!-- 动态加载购物车内容 -->
     </div>
@@ -199,7 +199,7 @@
 
         const userNameSpan = document.getElementById('userNameDisplay');
         if (userNameSpan) {
-            userNameSpan.textContent = `欢迎，${user.name}`;
+            userNameSpan.textContent = `Welcome，${user.name}`;
         }
 
         loadCart();
@@ -232,9 +232,9 @@
         if (currentCart.length === 0) {
             container.innerHTML = `
                     <div class="empty-cart">
-                        <h3>🛒 购物车还是空的</h3>
+                        <h3>🛒 cart is still empty</h3>
                         <p style="color:#999; margin-bottom: 20px;">快去添加一些美味的披萨吧！</p >
-                        <a href="menu.html">🍕 去点餐</a >
+                        <a href="menu.html">🍕 go order food</a >
                     </div>
                 `;
             return;
@@ -257,7 +257,7 @@
                         <div class="cart-item-info">
                             <h4>🍕 ${item.pizzaName || item.pizza_name}</h4>
                             <div class="cart-item-toppings">
-                                ${toppingsHtml || '<span>无配料</span>'}
+                                ${toppingsHtml || '<span>no toppings</span>'}
                             </div>
                             <div class="unit-price">单价：¥${unitTotal}</div>
                         </div>
@@ -281,8 +281,8 @@
                 <div class="cart-summary">
                     <div class="total">总计：<span>¥${grandTotal}</span></div>
                     <div>
-                        <button class="continue-btn" onclick="continueShopping()">继续购物</button>
-                        <button class="checkout-btn" onclick="goToCheckout()">去结算</button>
+                        <button class="continue-btn" onclick="continueShopping()">keep shopping</button>
+                        <button class="checkout-btn" onclick="goToCheckout()">checkout</button>
                     </div>
                 </div>
             `;
@@ -307,7 +307,7 @@
     function removeItem(index) {
         if (index < 0 || index >= currentCart.length) return;
 
-        if (confirm('确定要删除这个商品吗？')) {
+        if (confirm('sure to cancel this goods?')) {
             currentCart.splice(index, 1);
             saveCart(currentCart);
             loadCart();
@@ -320,7 +320,7 @@
 
     function goToCheckout() {
         if (currentCart.length === 0) {
-            alert('购物车还是空的，请先添加商品');
+            alert('cart is still empty，please enter goods');
             return;
         }
         window.location.href = 'checkout.html';
