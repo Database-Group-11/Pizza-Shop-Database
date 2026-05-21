@@ -144,7 +144,7 @@
         const image = currentPizza.image || 'https://picsum.photos/id/106/300/200';
 
         container.innerHTML = `
-                < img src="${image}" alt="${name}">
+
                 <h2>${name}</h2>
                 <p style="color:#666; margin:8px 0;">${description}</p >
                 <div class="price">basic price：¥${price.toFixed(2)}</div>
@@ -253,7 +253,7 @@
         const toppingsCopy = selectedToppings.map(t => ({ ...t }));
         addToCart(currentPizza, toppingsCopy, currentQuantity);
         updateCartCount();
-        if (confirm('已加入购物车！\n\n点击"确定"继续购物，点击"取消"去购物车结算')) {
+        if (confirm('already add to cart！\n\npress"sure"to keep shopping，press"exit"go to cart and checkout')) {
             window.location.href = 'menu.html';
         } else {
             window.location.href = 'cart.html';
