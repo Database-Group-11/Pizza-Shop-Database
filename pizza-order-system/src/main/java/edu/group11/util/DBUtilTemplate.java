@@ -121,7 +121,6 @@ public class DBUtilTemplate {
             for (String sql : sqlStatements) {
                 String trimmedSql = sql.trim();
                 if (!trimmedSql.isEmpty()) {
-                    // 跳过注释行
                     if (!trimmedSql.startsWith("--") && !trimmedSql.startsWith("/*")) {
                         stmt.execute(trimmedSql);
                     }
@@ -150,10 +149,10 @@ public class DBUtilTemplate {
 
     public static void initDatabase(String sqlDirPath) {
         try {
-            executeSqlFile(sqlDirPath + "/schema.sql");      // 1. 建表
-            executeSqlFile(sqlDirPath + "/views.sql");       // 2. 建视图
-            executeSqlFile(sqlDirPath + "/indexes.sql");     // 3. 建索引
-            executeSqlFile(sqlDirPath + "/test_data.sql");   // 4. 插入测试数据
+            executeSqlFile(sqlDirPath + "/schema.sql");
+            executeSqlFile(sqlDirPath + "/views.sql");
+            executeSqlFile(sqlDirPath + "/indexes.sql");
+            executeSqlFile(sqlDirPath + "/test_data.sql");
             System.out.println("Successfully initialized the database");
         } catch (Exception e) {
             System.err.println("Failed to initialize the database: " + e.getMessage());

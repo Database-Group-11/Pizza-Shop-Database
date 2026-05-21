@@ -35,9 +35,8 @@ public class ToppingServlet extends HttpServlet {
 
         try {
             if (pathInfo == null || pathInfo.equals("/")) {
-                // GET /api/toppings/ - 获取所有可用配料
+                // GET /api/toppings/ - get available toppings
                 List<Map<String, Object>> toppings = toppingDAO.getAllToppings();
-                // 修改：包装成统一格式
                 JSONObject result = new JSONObject();
                 result.put("code", 200);
                 result.put("message", "success");
@@ -68,7 +67,7 @@ public class ToppingServlet extends HttpServlet {
                                 categoryResult.put("data", convertToJSONArray(toppingsByCategory));
                                 sendResponse(response, HttpServletResponse.SC_OK, categoryResult);
                             } else {
-                                sendError(response, HttpServletResponse.SC_BAD_REQUEST, "缺少分类参数");
+                                sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Lacks category parameter");
                             }
                             break;
 
@@ -106,10 +105,10 @@ public class ToppingServlet extends HttpServlet {
                                     singleResult.put("data", convertToJSON(topping));
                                     sendResponse(response, HttpServletResponse.SC_OK, singleResult);
                                 } else {
-                                    sendError(response, HttpServletResponse.SC_NOT_FOUND, "配料未找到");
+                                    sendError(response, HttpServletResponse.SC_NOT_FOUND, "Topping cannot be found");
                                 }
                             } catch (NumberFormatException e) {
-                                sendError(response, HttpServletResponse.SC_BAD_REQUEST, "无效的请求路径");
+                                sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Invalid request path");
                             }
                             break;
                     }
@@ -123,15 +122,15 @@ public class ToppingServlet extends HttpServlet {
                         pizzaResult.put("data", convertToJSONArray(pizzaToppings));
                         sendResponse(response, HttpServletResponse.SC_OK, pizzaResult);
                     } catch (NumberFormatException e) {
-                        sendError(response, HttpServletResponse.SC_BAD_REQUEST, "无效的披萨ID");
+                        sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Invalid pizza ID");
                     }
                 } else {
-                    sendError(response, HttpServletResponse.SC_BAD_REQUEST, "无效的请求路径");
+                    sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Invalid request path");
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
-            sendError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "服务器错误: " + e.getMessage());
+            sendError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Server error: " + e.getMessage());
         }
     }
 
@@ -145,21 +144,21 @@ public class ToppingServlet extends HttpServlet {
 
         try {
             if (pathInfo == null || pathInfo.equals("/")) {
-                // POST /api/toppings/ - 创建新配料（管理员）
+                // POST /api/toppings/ - create new topping
                 JSONObject jsonData = parseJSONFromRequest(request);
                 if (jsonData != null) {
                     int toppingId = toppingDAO.createTopping(jsonData);
                     if (toppingId > 0) {
                         JSONObject result = new JSONObject();
                         result.put("success", true);
-                        result.put("message", "配料创建成功");
+                        result.put("message", "Successfully created topping");
                         result.put("toppingId", toppingId);
                         sendResponse(response, HttpServletResponse.SC_CREATED, result);
                     } else {
-                        sendError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "创建配料失败");
+                        sendError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to create topping");
                     }
                 } else {
-                    sendError(response, HttpServletResponse.SC_BAD_REQUEST, "无效的JSON数据");
+                    sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Invalid JSON data");
                 }
             } else {
                 String[] pathParts = pathInfo.split("/");
@@ -168,32 +167,32 @@ public class ToppingServlet extends HttpServlet {
                     JSONObject jsonData = parseJSONFromRequest(request);
 
                     if (jsonData == null) {
-                        sendError(response, HttpServletResponse.SC_BAD_REQUEST, "无效的JSON数据");
+                        sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Invalid JSON data");
                         return;
                     }
 
                     switch (action) {
                         case "assign":
-                            // POST /api/toppings/assign - 为披萨分配配料
+                            // POST /api/toppings/assign - assign topping for pizza
                             handleAssignTopping(jsonData, response);
                             break;
 
                         case "update-stock":
-                            // POST /api/toppings/update-stock - 更新库存
+                            // POST /api/toppings/update-stock - update stock
                             handleUpdateStock(jsonData, response);
                             break;
 
                         default:
-                            sendError(response, HttpServletResponse.SC_BAD_REQUEST, "未知的操作");
+                            sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Unknown operation");
                             break;
                     }
                 } else {
-                    sendError(response, HttpServletResponse.SC_BAD_REQUEST, "无效的请求路径");
+                    sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Invalid request path");
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
-            sendError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "服务器错误: " + e.getMessage());
+            sendError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Server error: " + e.getMessage());
         }
     }
 
@@ -217,26 +216,26 @@ public class ToppingServlet extends HttpServlet {
                             if (success) {
                                 JSONObject result = new JSONObject();
                                 result.put("success", true);
-                                result.put("message", "配料更新成功");
+                                result.put("message", "Successfully updated topping");
                                 sendResponse(response, HttpServletResponse.SC_OK, result);
                             } else {
-                                sendError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "更新配料失败");
+                                sendError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to update topping");
                             }
                         } else {
-                            sendError(response, HttpServletResponse.SC_BAD_REQUEST, "无效的JSON数据");
+                            sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Invalid JSON data");
                         }
                     } catch (NumberFormatException e) {
-                        sendError(response, HttpServletResponse.SC_BAD_REQUEST, "无效的配料ID");
+                        sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Invalid topping ID");
                     }
                 } else {
-                    sendError(response, HttpServletResponse.SC_BAD_REQUEST, "无效的请求路径");
+                    sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Invalid request path");
                 }
             } else {
-                sendError(response, HttpServletResponse.SC_BAD_REQUEST, "缺少配料ID");
+                sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Lacks topping ID");
             }
         } catch (Exception e) {
             e.printStackTrace();
-            sendError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "服务器错误: " + e.getMessage());
+            sendError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Server error" + e.getMessage());
         }
     }
 
@@ -252,54 +251,54 @@ public class ToppingServlet extends HttpServlet {
             if (pathInfo != null && !pathInfo.equals("/")) {
                 String[] pathParts = pathInfo.split("/");
                 if (pathParts.length == 2) {
-                    // DELETE /api/toppings/{id} - 删除配料
+                    // DELETE /api/toppings/{id} - delete topping
                     try {
                         int toppingId = Integer.parseInt(pathParts[1]);
                         boolean success = toppingDAO.deleteTopping(toppingId);
                         if (success) {
                             JSONObject result = new JSONObject();
                             result.put("success", true);
-                            result.put("message", "配料删除成功");
+                            result.put("message", "Successfully deleted topping");
                             sendResponse(response, HttpServletResponse.SC_OK, result);
                         } else {
-                            sendError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "删除配料失败");
+                            sendError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to delete topping");
                         }
                     } catch (NumberFormatException e) {
-                        sendError(response, HttpServletResponse.SC_BAD_REQUEST, "无效的配料ID");
+                        sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Invalid topping ID");
                     }
                 } else if (pathParts.length == 3 && "pizza".equals(pathParts[1])) {
-                    // DELETE /api/toppings/pizza/{relationId} - 移除披萨的配料
+                    // DELETE /api/toppings/pizza/{relationId} - remove topping from pizza
                     try {
                         int relationId = Integer.parseInt(pathParts[2]);
                         boolean success = toppingDAO.removePizzaTopping(relationId);
                         if (success) {
                             JSONObject result = new JSONObject();
                             result.put("success", true);
-                            result.put("message", "配料已从披萨中移除");
+                            result.put("message", "Successfully removed topping");
                             sendResponse(response, HttpServletResponse.SC_OK, result);
                         } else {
-                            sendError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "移除配料失败");
+                            sendError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to remove topping");
                         }
                     } catch (NumberFormatException e) {
-                        sendError(response, HttpServletResponse.SC_BAD_REQUEST, "无效的关系ID");
+                        sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Invalid relation topping ID");
                     }
                 } else {
-                    sendError(response, HttpServletResponse.SC_BAD_REQUEST, "无效的请求路径");
+                    sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Invalid request path");
                 }
             } else {
-                sendError(response, HttpServletResponse.SC_BAD_REQUEST, "缺少配料ID");
+                sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Lacks topping ID");
             }
         } catch (Exception e) {
             e.printStackTrace();
-            sendError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "服务器错误: " + e.getMessage());
+            sendError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Server error" + e.getMessage());
         }
     }
 
-    // 处理分配配料到披萨
+    // Handle with assigning topping to pizza
     private void handleAssignTopping(JSONObject jsonData, HttpServletResponse response)
             throws IOException {
         if (!jsonData.has("pizzaId") || !jsonData.has("toppingId")) {
-            sendError(response, HttpServletResponse.SC_BAD_REQUEST, "缺少必要参数");
+            sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Lacks necessary parameters");
             return;
         }
 
@@ -311,18 +310,18 @@ public class ToppingServlet extends HttpServlet {
         if (success) {
             JSONObject result = new JSONObject();
             result.put("success", true);
-            result.put("message", "配料分配成功");
+            result.put("message", "Successfully assigned topping");
             sendResponse(response, HttpServletResponse.SC_OK, result);
         } else {
-            sendError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "配料分配失败");
+            sendError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to assign topping");
         }
     }
 
-    // 处理更新库存
+    // Handle with updating stock
     private void handleUpdateStock(JSONObject jsonData, HttpServletResponse response)
             throws IOException {
         if (!jsonData.has("toppingId") || !jsonData.has("stock")) {
-            sendError(response, HttpServletResponse.SC_BAD_REQUEST, "缺少必要参数");
+            sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Lacks necessary parameters");
             return;
         }
 
@@ -333,14 +332,14 @@ public class ToppingServlet extends HttpServlet {
         if (success) {
             JSONObject result = new JSONObject();
             result.put("success", true);
-            result.put("message", "库存更新成功");
+            result.put("message", "Successfully updated stock");
             sendResponse(response, HttpServletResponse.SC_OK, result);
         } else {
-            sendError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "库存更新失败");
+            sendError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to update stock");
         }
     }
 
-    // 从请求中解析JSON数据
+    // Analyse JSON data from request
     private JSONObject parseJSONFromRequest(HttpServletRequest request) throws IOException {
         StringBuilder sb = new StringBuilder();
         String line;
@@ -361,7 +360,7 @@ public class ToppingServlet extends HttpServlet {
         return null;
     }
 
-    // 转换Map为JSONObject
+    // Change Map to JSONObject
     private JSONObject convertToJSON(Map<String, Object> map) {
         JSONObject json = new JSONObject();
         for (Map.Entry<String, Object> entry : map.entrySet()) {
@@ -377,7 +376,7 @@ public class ToppingServlet extends HttpServlet {
         return json;
     }
 
-    // 转换Map列表为JSONArray
+    // Change Map to JSONArray
     private JSONArray convertToJSONArray(List<Map<String, Object>> list) {
         JSONArray array = new JSONArray();
         for (Map<String, Object> map : list) {
@@ -386,7 +385,7 @@ public class ToppingServlet extends HttpServlet {
         return array;
     }
 
-    // 发送成功响应（JSONObject）
+    // Send success request(JSONObject)
     private void sendResponse(HttpServletResponse response, int statusCode, JSONObject jsonData)
             throws IOException {
         response.setStatus(statusCode);
@@ -395,7 +394,7 @@ public class ToppingServlet extends HttpServlet {
         out.flush();
     }
 
-    // 发送成功响应（JSONArray）
+    // Send success request(JSONArray)
     private void sendResponse(HttpServletResponse response, int statusCode, JSONArray jsonArray)
             throws IOException {
         response.setStatus(statusCode);
@@ -404,7 +403,7 @@ public class ToppingServlet extends HttpServlet {
         out.flush();
     }
 
-    // 发送错误响应
+    // Send error request
     private void sendError(HttpServletResponse response, int statusCode, String message)
             throws IOException {
         response.setStatus(statusCode);
