@@ -123,11 +123,11 @@
                 }
                 renderPizzas(pizzas);
             } else {
-                grid.innerHTML = `<div style="text-align:center; padding:40px; color:#e74c3c;">加载失败：${result.message}</div>`;
+                grid.innerHTML = `<div style="text-align:center; padding:40px; color:#e74c3c;">fail to load：${result.message}</div>`;
             }
         } catch (error) {
             console.error('网络错误:', error);
-            grid.innerHTML = '<div style="text-align:center; padding:40px; color:#e74c3c;">网络错误，请检查后端</div>';
+            grid.innerHTML = '<div style="text-align:center; padding:40px; color:#e74c3c;">internet error，请检查后端</div>';
         }
     }
 
@@ -136,7 +136,7 @@
         if (!grid) return;
 
         if (pizzas.length === 0) {
-            grid.innerHTML = '<div style="text-align:center; padding:40px;">暂无披萨</div>';
+            grid.innerHTML = '<div style="text-align:center; padding:40px;">no pizza</div>';
             return;
         }
 

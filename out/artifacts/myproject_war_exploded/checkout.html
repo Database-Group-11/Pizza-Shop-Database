@@ -189,7 +189,7 @@
             paymentMethod: paymentMethod,
             totalAmount: totalAmount,
             items: cart.map(item => ({
-                pizzaId: item.pizzaId || item.pizza_id,
+                pizzaId: item.pizzaId,
                 quantity: item.quantity,
                 toppingIds: (item.toppings || []).map(t => t.toppingId)
             }))
@@ -199,8 +199,7 @@
             const response = await fetch(`${API_BASE}/api/orders`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(orderData),
-                credentials: 'include'
+                body: JSON.stringify(orderData)
             });
             const result = await response.json();
 
