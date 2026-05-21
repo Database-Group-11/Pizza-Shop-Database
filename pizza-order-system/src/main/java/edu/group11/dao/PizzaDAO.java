@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PizzaDAO {
-    // 获取所有披萨
+    // Get all pizzas
     public List<Pizza> getAllPizzas() {
         List<Pizza> pizzas = new ArrayList<>();
         String sql = "SELECT pizza_id, name, description, base_price, category, image, available FROM pizzas WHERE available = 1";
@@ -35,7 +35,7 @@ public class PizzaDAO {
         return pizzas;
     }
 
-    // 根据ID获取披萨
+    // Get pizza by ID
     public Pizza getPizzaById(int pizzaId) {
         String sql = "SELECT pizza_id, name, description, base_price, category, image, available FROM pizzas WHERE pizza_id = ?";
 
@@ -63,7 +63,7 @@ public class PizzaDAO {
         return null;
     }
 
-    // 根据分类获取披萨
+    // Find pizza by category
     public List<Pizza> getPizzasByCategory(String category) {
         List<Pizza> pizzas = new ArrayList<>();
         String sql = "SELECT pizza_id, name, description, base_price, category, image, available FROM pizzas WHERE category = ? AND available = 1";
@@ -92,7 +92,7 @@ public class PizzaDAO {
         return pizzas;
     }
 
-    // 管理员添加披萨
+    // Add pizza
     public boolean addPizza(Pizza pizza) {
         String sql = "INSERT INTO pizzas (name, description, base_price, category, image, available) VALUES (?, ?, ?, ?, ?, ?)";
 
@@ -113,7 +113,7 @@ public class PizzaDAO {
         return false;
     }
 
-    // 管理员更新披萨
+    // Update pizza
     public boolean updatePizza(Pizza pizza) {
         String sql = "UPDATE pizzas SET name = ?, description = ?, base_price = ?, category = ?, image = ?, available = ? WHERE pizza_id = ?";
 
@@ -135,7 +135,7 @@ public class PizzaDAO {
         return false;
     }
 
-    // 管理员删除披萨
+    // Delete pizza
     public boolean deletePizza(int pizzaId) {
         String sql = "DELETE FROM pizzas WHERE pizza_id = ?";
 

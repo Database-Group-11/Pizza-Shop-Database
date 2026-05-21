@@ -9,9 +9,7 @@ import java.util.List;
 
 public class OrderItemDAO {
 
-    /**
-     * 创建订单项（使用传入的连接，支持事务）
-     */
+    // Create order item
     public void createOrderItem(Connection conn, OrderItem item) throws SQLException {
         String sql = "INSERT INTO order_items (order_id, pizza_id, quantity, unit_price, subtotal) VALUES (?, ?, ?, ?, ?)";
 
@@ -25,9 +23,7 @@ public class OrderItemDAO {
         }
     }
 
-    /**
-     * 根据订单ID查询订单项
-     */
+    // Find order item by order ID
     public List<OrderItem> findByOrderId(int orderId) {
         List<OrderItem> items = new ArrayList<>();
         String sql = "SELECT order_item_id, order_id, pizza_id, quantity, unit_price, subtotal FROM order_items WHERE order_id = ?";
@@ -43,7 +39,6 @@ public class OrderItemDAO {
                 item.setOrderItemId(rs.getInt("order_item_id"));
                 item.setOrderId(rs.getInt("order_id"));
                 item.setPizzaId(rs.getInt("pizza_id"));
-                // item.setPizzaName(rs.getString("pizza_name"));  // 注释掉
                 item.setQuantity(rs.getInt("quantity"));
                 item.setUnitPrice(rs.getDouble("unit_price"));
                 item.setSubtotal(rs.getDouble("subtotal"));

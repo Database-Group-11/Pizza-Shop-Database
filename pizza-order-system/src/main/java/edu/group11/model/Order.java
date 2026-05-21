@@ -9,18 +9,17 @@ public class Order {
     private int customerId;
     private Date orderTime;
     private double totalAmount;
-    private String status;  // pending, paid, delivering, completed, cancelled
+    private String status;  // Includes pending, paid, delivering, completed, cancelled
     private String deliveryAddress;
     private String paymentMethod;
     private Date createTime;
     private Date updateTime;
 
-    // 关联对象（非数据库字段）
     private List<OrderItem> items;
     private Payment payment;
     private Delivery delivery;
 
-    // 构造方法
+    // Constructor
     public Order() {}
 
     // Getters and Setters

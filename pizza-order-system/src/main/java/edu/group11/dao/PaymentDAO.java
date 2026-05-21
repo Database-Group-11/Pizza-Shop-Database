@@ -8,7 +8,7 @@ import java.sql.*;
 public class PaymentDAO {
 
     /**
-     * 创建支付记录
+     * Create payment record
      */
     public int createPayment(Payment payment) {
         String sql = "INSERT INTO payments (order_id, payment_method, amount, payment_status, transaction_id) VALUES (?, ?, ?, ?, ?)";
@@ -36,7 +36,7 @@ public class PaymentDAO {
     }
 
     /**
-     * 根据订单ID查询支付记录
+     * Find payment by order ID
      */
     public Payment findByOrderId(int orderId) {
         String sql = "SELECT * FROM payments WHERE order_id = ?";
@@ -66,7 +66,7 @@ public class PaymentDAO {
     }
 
     /**
-     * 更新支付状态
+     * Update payment status
      */
     public boolean updateStatus(int paymentId, String status) {
         String sql = "UPDATE payments SET payment_status = ? WHERE payment_id = ?";
@@ -81,5 +81,4 @@ public class PaymentDAO {
         }
         return false;
     }
-
 }

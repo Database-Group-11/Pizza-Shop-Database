@@ -9,9 +9,7 @@ import java.util.List;
 
 public class CustomerDAO {
 
-    /**
-     * Users' registration
-     */
+    // Users' registration
     public int register(Customer customer) {
         String sql = "INSERT INTO customers (name, phone, password, address) VALUES (?, ?, ?, ?)";
         try (Connection conn = DBUtil.getConnection();
@@ -35,9 +33,7 @@ public class CustomerDAO {
         return -1;
     }
 
-    /**
-     * Users' login
-     */
+    // Users' login
     public Customer login(String phone, String password) {
         String sql = "SELECT * FROM customers WHERE phone = ? AND password = ?";
         try (Connection conn = DBUtil.getConnection();
@@ -56,9 +52,7 @@ public class CustomerDAO {
         return null;
     }
 
-    /**
-     * Find users by ID
-     */
+    // Find users by ID
     public Customer findById(int customerId) {
         String sql = "SELECT * FROM customers WHERE customer_id = ?";
         try (Connection conn = DBUtil.getConnection();
@@ -75,9 +69,7 @@ public class CustomerDAO {
         return null;
     }
 
-    /**
-     * Find users by phone number
-     */
+    // Find users by phone number
     public Customer findByPhone(String phone) {
         String sql = "SELECT * FROM customers WHERE phone = ?";
         try (Connection conn = DBUtil.getConnection();
@@ -94,9 +86,7 @@ public class CustomerDAO {
         return null;
     }
 
-    /**
-     * Update users' information
-     */
+    // Update users' information
     public boolean update(Customer customer) {
         String sql = "UPDATE customers SET name = ?, phone = ?, address = ? WHERE customer_id = ?";
         try (Connection conn = DBUtil.getConnection();

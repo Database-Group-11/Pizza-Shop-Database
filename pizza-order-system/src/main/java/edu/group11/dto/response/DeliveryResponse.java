@@ -90,14 +90,14 @@ public class DeliveryResponse {
         this.estimatedDeliveryTime = estimatedDeliveryTime;
     }
 
-    // 辅助方法
+    // Helping methods
     public String getStatusText() {
         switch (status) {
-            case "preparing": return "准备中";
-            case "delivering": return "配送中";
-            case "delivered": return "已送达";
-            case "cancelled": return "已取消";
-            default: return "未知";
+            case "preparing": return "preparing";
+            case "delivering": return "delivering";
+            case "delivered": return "delivered";
+            case "cancelled": return "cancelled";
+            default: return "unknown";
         }
     }
 }

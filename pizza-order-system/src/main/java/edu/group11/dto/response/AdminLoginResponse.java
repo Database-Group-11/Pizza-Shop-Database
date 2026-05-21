@@ -5,7 +5,7 @@ public class AdminLoginResponse {
     private String username;
     private String email;
     private String role;
-    private String token;  // 可选，用于 JWT 认证
+    private String token;
 
     public AdminLoginResponse() {}
 

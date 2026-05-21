@@ -9,12 +9,12 @@ public class Delivery {
     private String riderPhone;
     private Date startTime;
     private Date arriveTime;
-    private String status;  // preparing, delivering, delivered, cancelled
+    private String status;  // Includes preparing, delivering, delivered, cancelled
     private Date estimatedDeliveryTime;
     private Date createTime;
     private Date updateTime;
 
-    // 构造方法
+    // Constructors
     public Delivery() {}
 
     public Delivery(int orderId, String riderName, String riderPhone) {
@@ -60,7 +60,7 @@ public class Delivery {
     public Date getUpdateTime() {return updateTime;}
     public void setUpdateTime(Date updateTime) {this.updateTime = updateTime;}
 
-    // 辅助方法
+    // Helping methods
     public boolean isDelivered() {
         return "delivered".equals(status);
     }

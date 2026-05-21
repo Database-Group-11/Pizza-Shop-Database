@@ -29,11 +29,10 @@ public class CartServlet extends HttpServlet {
 
         HttpSession session = req.getSession(false);
         if (session == null || session.getAttribute("userId") == null) {
-            resp.getWriter().write(gson.toJson(Result.error(401, "请先登录")));
+            resp.getWriter().write(gson.toJson(Result.error(401, "Please login.")));
             return;
         }
 
-        // 获取购物车内容
         @SuppressWarnings("unchecked")
         List<Map<String, Object>> cart = (List<Map<String, Object>>) session.getAttribute("cart");
 
@@ -52,7 +51,7 @@ public class CartServlet extends HttpServlet {
 
         HttpSession session = req.getSession(false);
         if (session == null || session.getAttribute("userId") == null) {
-            resp.getWriter().write(gson.toJson(Result.error(401, "请先登录")));
+            resp.getWriter().write(gson.toJson(Result.error(401, "Please login.")));
             return;
         }
 
@@ -66,7 +65,7 @@ public class CartServlet extends HttpServlet {
             handleClearCart(req, resp, session);
         } else {
             resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            resp.getWriter().write(gson.toJson(Result.error(404, "接口不存在")));
+            resp.getWriter().write(gson.toJson(Result.error(404, "Interface doesn't exist.")));
         }
     }
 
@@ -80,7 +79,6 @@ public class CartServlet extends HttpServlet {
             cart = new ArrayList<>();
         }
 
-        // 检查是否已存在相同商品
         int pizzaId = ((Double) cartItem.get("pizzaId")).intValue();
         boolean exists = false;
         for (Map<String, Object> item : cart) {
@@ -105,7 +103,7 @@ public class CartServlet extends HttpServlet {
         String pizzaIdStr = req.getParameter("pizzaId");
 
         if (pizzaIdStr == null) {
-            resp.getWriter().write(gson.toJson(Result.error(400, "pizzaId不能为空")));
+            resp.getWriter().write(gson.toJson(Result.error(400, "pizzaId cannot be null.")));
             return;
         }
 
@@ -122,6 +120,6 @@ public class CartServlet extends HttpServlet {
 
     private void handleClearCart(HttpServletRequest req, HttpServletResponse resp, HttpSession session) throws IOException {
         session.removeAttribute("cart");
-        resp.getWriter().write(gson.toJson(Result.success("购物车已清空")));
+        resp.getWriter().write(gson.toJson(Result.success("Cart cleared.")));
     }
 }

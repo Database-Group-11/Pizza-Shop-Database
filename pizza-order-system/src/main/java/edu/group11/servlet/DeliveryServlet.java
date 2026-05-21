@@ -36,7 +36,6 @@ public class DeliveryServlet extends HttpServlet {
 
         try {
             if (pathInfo == null || pathInfo.equals("/")) {
-                // 获取所有进行中的配送
                 List<Map<String, Object>> deliveries = deliveryDAO.getActiveDeliveries();
                 sendResponse(response, HttpServletResponse.SC_OK, convertToJSONArray(deliveries));
             } else {
@@ -54,21 +53,20 @@ public class DeliveryServlet extends HttpServlet {
                                 if (delivery != null && !delivery.isEmpty()) {
                                     sendResponse(response, HttpServletResponse.SC_OK, convertToJSON(delivery));
                                 } else {
-                                    sendError(response, HttpServletResponse.SC_NOT_FOUND, "配送信息未找到");
+                                    sendError(response, HttpServletResponse.SC_NOT_FOUND, "Delivery info was not found");
                                 }
                             } else {
-                                sendError(response, HttpServletResponse.SC_BAD_REQUEST, "缺少订单ID参数");
+                                sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Lacks delivery ID parameter");
                             }
                             break;
 
                         case "driver":
-                            // GET /api/deliveries/driver?name=张三
                             String driverName = request.getParameter("name");
                             if (driverName != null && !driverName.isEmpty()) {
                                 List<Map<String, Object>> deliveries = deliveryDAO.getDeliveriesByDriver(driverName);
                                 sendResponse(response, HttpServletResponse.SC_OK, convertToJSONArray(deliveries));
                             } else {
-                                sendError(response, HttpServletResponse.SC_BAD_REQUEST, "缺少骑手姓名参数");
+                                sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Lacks driver name parameter");
                             }
                             break;
 
@@ -92,20 +90,20 @@ public class DeliveryServlet extends HttpServlet {
                                 if (delivery != null && !delivery.isEmpty()) {
                                     sendResponse(response, HttpServletResponse.SC_OK, convertToJSON(delivery));
                                 } else {
-                                    sendError(response, HttpServletResponse.SC_NOT_FOUND, "配送信息未找到");
+                                    sendError(response, HttpServletResponse.SC_NOT_FOUND, "Delivery info was not found");
                                 }
                             } catch (NumberFormatException e) {
-                                sendError(response, HttpServletResponse.SC_BAD_REQUEST, "无效的请求路径");
+                                sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Invalid request path");
                             }
                             break;
                     }
                 } else {
-                    sendError(response, HttpServletResponse.SC_BAD_REQUEST, "无效的请求路径");
+                    sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Invalid request path");
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
-            sendError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "服务器错误: " + e.getMessage());
+            sendError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Server error: " + e.getMessage());
         }
     }
 
@@ -119,21 +117,21 @@ public class DeliveryServlet extends HttpServlet {
 
         try {
             if (pathInfo == null || pathInfo.equals("/")) {
-                // POST /api/deliveries/ - 创建配送记录
+                // POST /api/deliveries/
                 JSONObject jsonData = parseJSONFromRequest(request);
                 if (jsonData != null) {
                     int deliveryId = deliveryDAO.createDelivery(jsonData);
                     if (deliveryId > 0) {
                         JSONObject result = new JSONObject();
                         result.put("success", true);
-                        result.put("message", "配送记录创建成功");
+                        result.put("message", "Successfully create delivery history");
                         result.put("deliveryId", deliveryId);
                         sendResponse(response, HttpServletResponse.SC_CREATED, result);
                     } else {
-                        sendError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "创建配送记录失败");
+                        sendError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to create delivery history");
                     }
                 } else {
-                    sendError(response, HttpServletResponse.SC_BAD_REQUEST, "无效的JSON数据");
+                    sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Invalid JSON data");
                 }
             } else {
                 String[] pathParts = pathInfo.split("/");
@@ -142,52 +140,52 @@ public class DeliveryServlet extends HttpServlet {
                     JSONObject jsonData = parseJSONFromRequest(request);
 
                     if (jsonData == null) {
-                        sendError(response, HttpServletResponse.SC_BAD_REQUEST, "无效的JSON数据");
+                        sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Invalid JSON data");
                         return;
                     }
 
                     switch (action) {
                         case "assign":
-                            // POST /api/deliveries/assign - 分配骑手
+                            // POST /api/deliveries/assign - assign driver
                             handleAssignDriver(jsonData, response);
                             break;
 
                         case "start":
-                            // POST /api/deliveries/start - 开始配送
+                            // POST /api/deliveries/start - start delivery
                             handleStartDelivery(jsonData, response);
                             break;
 
                         case "complete":
-                            // POST /api/deliveries/complete - 完成配送
+                            // POST /api/deliveries/complete - complete delivery
                             handleCompleteDelivery(jsonData, response);
                             break;
 
                         case "cancel":
-                            // POST /api/deliveries/cancel - 取消配送
+                            // POST /api/deliveries/cancel - cancel delivery
                             handleCancelDelivery(jsonData, response);
                             break;
 
                         case "tracking":
-                            // POST /api/deliveries/tracking - 更新追踪号
+                            // POST /api/deliveries/tracking - update tracking number
                             handleUpdateTracking(jsonData, response);
                             break;
 
                         case "notes":
-                            // POST /api/deliveries/notes - 添加备注
+                            // POST /api/deliveries/notes - add notes
                             handleAddNotes(jsonData, response);
                             break;
 
                         default:
-                            sendError(response, HttpServletResponse.SC_BAD_REQUEST, "未知的操作");
+                            sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Unknown operation");
                             break;
                     }
                 } else {
-                    sendError(response, HttpServletResponse.SC_BAD_REQUEST, "无效的请求路径");
+                    sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Invalid request path");
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
-            sendError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "服务器错误: " + e.getMessage());
+            sendError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Server error: " + e.getMessage());
         }
     }
 
@@ -209,39 +207,38 @@ public class DeliveryServlet extends HttpServlet {
                         if (jsonData != null) {
                             boolean success = false;
 
-                            // 根据请求参数判断更新类型
                             String action = request.getParameter("action");
                             if ("status".equals(action) && jsonData.has("deliveryStatus")) {
                                 String status = jsonData.getString("deliveryStatus");
                                 success = deliveryDAO.updateDeliveryStatus(deliveryId, status);
                             } else {
-                                sendError(response, HttpServletResponse.SC_BAD_REQUEST, "不支持的更新操作");
+                                sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Invalid update operation");
                                 return;
                             }
 
                             if (success) {
                                 JSONObject result = new JSONObject();
                                 result.put("success", true);
-                                result.put("message", "配送信息更新成功");
+                                result.put("message", "Succesfully update delivery info");
                                 sendResponse(response, HttpServletResponse.SC_OK, result);
                             } else {
-                                sendError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "更新配送信息失败");
+                                sendError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to update delivery info");
                             }
                         } else {
-                            sendError(response, HttpServletResponse.SC_BAD_REQUEST, "无效的JSON数据");
+                            sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Invalid JSON data");
                         }
                     } catch (NumberFormatException e) {
-                        sendError(response, HttpServletResponse.SC_BAD_REQUEST, "无效的配送ID");
+                        sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Invalid delivery ID");
                     }
                 } else {
-                    sendError(response, HttpServletResponse.SC_BAD_REQUEST, "无效的请求路径");
+                    sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Invalid request path");
                 }
             } else {
-                sendError(response, HttpServletResponse.SC_BAD_REQUEST, "缺少配送ID");
+                sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Lacks delivery ID");
             }
         } catch (Exception e) {
             e.printStackTrace();
-            sendError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "服务器错误: " + e.getMessage());
+            sendError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Server error: " + e.getMessage());
         }
     }
 
@@ -263,31 +260,31 @@ public class DeliveryServlet extends HttpServlet {
                         if (success) {
                             JSONObject result = new JSONObject();
                             result.put("success", true);
-                            result.put("message", "配送已取消");
+                            result.put("message", "This delivery is cancelled");
                             sendResponse(response, HttpServletResponse.SC_OK, result);
                         } else {
-                            sendError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "取消失败");
+                            sendError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to cancel");
                         }
                     } catch (NumberFormatException e) {
-                        sendError(response, HttpServletResponse.SC_BAD_REQUEST, "无效的配送ID");
+                        sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Invalid delivery ID");
                     }
                 } else {
-                    sendError(response, HttpServletResponse.SC_BAD_REQUEST, "无效的请求路径");
+                    sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Invalid request path");
                 }
             } else {
-                sendError(response, HttpServletResponse.SC_BAD_REQUEST, "缺少配送ID");
+                sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Lacks delivery ID");
             }
         } catch (Exception e) {
             e.printStackTrace();
-            sendError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "服务器错误: " + e.getMessage());
+            sendError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Server error:  " + e.getMessage());
         }
     }
 
-    // 处理分配骑手
+    // Handle with assigning driver
     private void handleAssignDriver(JSONObject jsonData, HttpServletResponse response)
             throws IOException {
         if (!jsonData.has("deliveryId") || !jsonData.has("driverName")) {
-            sendError(response, HttpServletResponse.SC_BAD_REQUEST, "缺少必要参数");
+            sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Lacks necessary parameters");
             return;
         }
 
@@ -299,18 +296,18 @@ public class DeliveryServlet extends HttpServlet {
         if (success) {
             JSONObject result = new JSONObject();
             result.put("success", true);
-            result.put("message", "骑手分配成功");
+            result.put("message", "Successfully assigned driver");
             sendResponse(response, HttpServletResponse.SC_OK, result);
         } else {
-            sendError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "骑手分配失败");
+            sendError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to assign driver");
         }
     }
 
-    // 处理开始配送
+    // Handle with starting delivery
     private void handleStartDelivery(JSONObject jsonData, HttpServletResponse response)
             throws IOException {
         if (!jsonData.has("deliveryId")) {
-            sendError(response, HttpServletResponse.SC_BAD_REQUEST, "缺少配送ID参数");
+            sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Lacks delivery ID parameter");
             return;
         }
 
@@ -320,18 +317,18 @@ public class DeliveryServlet extends HttpServlet {
         if (success) {
             JSONObject result = new JSONObject();
             result.put("success", true);
-            result.put("message", "配送已开始");
+            result.put("message", "Delivery has been started");
             sendResponse(response, HttpServletResponse.SC_OK, result);
         } else {
-            sendError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "开始配送失败");
+            sendError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to start delivery");
         }
     }
 
-    // 处理完成配送
+    // Handle with completing delivery
     private void handleCompleteDelivery(JSONObject jsonData, HttpServletResponse response)
             throws IOException {
         if (!jsonData.has("deliveryId")) {
-            sendError(response, HttpServletResponse.SC_BAD_REQUEST, "缺少配送ID参数");
+            sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Lacks delivery ID parameter");
             return;
         }
 
@@ -341,18 +338,18 @@ public class DeliveryServlet extends HttpServlet {
         if (success) {
             JSONObject result = new JSONObject();
             result.put("success", true);
-            result.put("message", "配送已完成");
+            result.put("message", "Successfully completed the delivery");
             sendResponse(response, HttpServletResponse.SC_OK, result);
         } else {
-            sendError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "完成配送失败");
+            sendError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to complete delivery");
         }
     }
 
-    // 处理取消配送
+    // Handle with cancelling delivery
     private void handleCancelDelivery(JSONObject jsonData, HttpServletResponse response)
             throws IOException {
         if (!jsonData.has("deliveryId")) {
-            sendError(response, HttpServletResponse.SC_BAD_REQUEST, "缺少配送ID参数");
+            sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Lacks delivery ID parameter");
             return;
         }
 
@@ -362,18 +359,18 @@ public class DeliveryServlet extends HttpServlet {
         if (success) {
             JSONObject result = new JSONObject();
             result.put("success", true);
-            result.put("message", "配送已取消");
+            result.put("message", "Delivery has been cancelled");
             sendResponse(response, HttpServletResponse.SC_OK, result);
         } else {
-            sendError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "取消配送失败");
+            sendError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to cancel delivery");
         }
     }
 
-    // 处理更新追踪号
+    // Handle with updating tracking number
     private void handleUpdateTracking(JSONObject jsonData, HttpServletResponse response)
             throws IOException {
         if (!jsonData.has("deliveryId") || !jsonData.has("trackingNumber")) {
-            sendError(response, HttpServletResponse.SC_BAD_REQUEST, "缺少必要参数");
+            sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Lacks necessary parameters");
             return;
         }
 
@@ -384,18 +381,18 @@ public class DeliveryServlet extends HttpServlet {
         if (success) {
             JSONObject result = new JSONObject();
             result.put("success", true);
-            result.put("message", "追踪号更新成功");
+            result.put("message", "Successfully updated tracking number");
             sendResponse(response, HttpServletResponse.SC_OK, result);
         } else {
-            sendError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "更新追踪号失败");
+            sendError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to update tracking number");
         }
     }
 
-    // 处理添加备注
+    // Handle with adding notes
     private void handleAddNotes(JSONObject jsonData, HttpServletResponse response)
             throws IOException {
         if (!jsonData.has("deliveryId") || !jsonData.has("notes")) {
-            sendError(response, HttpServletResponse.SC_BAD_REQUEST, "缺少必要参数");
+            sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Lacks necessary parameters");
             return;
         }
 
@@ -406,14 +403,14 @@ public class DeliveryServlet extends HttpServlet {
         if (success) {
             JSONObject result = new JSONObject();
             result.put("success", true);
-            result.put("message", "备注添加成功");
+            result.put("message", "Successfully added notes");
             sendResponse(response, HttpServletResponse.SC_OK, result);
         } else {
-            sendError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "添加备注失败");
+            sendError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to add notes");
         }
     }
 
-    // 从请求中解析JSON数据
+    // Analyse JSON data from request
     private JSONObject parseJSONFromRequest(HttpServletRequest request) throws IOException {
         StringBuilder sb = new StringBuilder();
         String line;
@@ -434,7 +431,7 @@ public class DeliveryServlet extends HttpServlet {
         return null;
     }
 
-    // 转换Map为JSONObject
+    // Change Map to JSONObject
     private JSONObject convertToJSON(Map<String, Object> map) {
         JSONObject json = new JSONObject();
         for (Map.Entry<String, Object> entry : map.entrySet()) {
@@ -450,7 +447,7 @@ public class DeliveryServlet extends HttpServlet {
         return json;
     }
 
-    // 转换Map列表为JSONArray
+    // Change Map list to JSONArray
     private JSONArray convertToJSONArray(List<Map<String, Object>> list) {
         JSONArray array = new JSONArray();
         for (Map<String, Object> map : list) {
@@ -459,7 +456,7 @@ public class DeliveryServlet extends HttpServlet {
         return array;
     }
 
-    // 发送成功响应（JSONObject）
+    // Send success response(JSONObject)
     private void sendResponse(HttpServletResponse response, int statusCode, JSONObject jsonData)
             throws IOException {
         response.setStatus(statusCode);
@@ -468,7 +465,7 @@ public class DeliveryServlet extends HttpServlet {
         out.flush();
     }
 
-    // 发送成功响应（JSONArray）
+    // Send success response(JSONArray)
     private void sendResponse(HttpServletResponse response, int statusCode, JSONArray jsonArray)
             throws IOException {
         response.setStatus(statusCode);
@@ -477,7 +474,7 @@ public class DeliveryServlet extends HttpServlet {
         out.flush();
     }
 
-    // 发送错误响应
+    // Send error response
     private void sendError(HttpServletResponse response, int statusCode, String message)
             throws IOException {
         response.setStatus(statusCode);

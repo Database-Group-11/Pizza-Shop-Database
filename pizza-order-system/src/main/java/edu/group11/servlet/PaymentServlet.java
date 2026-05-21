@@ -31,10 +31,9 @@ public class PaymentServlet extends HttpServlet {
 
         resp.setContentType("application/json;charset=UTF-8");
 
-        // 验证登录
         HttpSession session = req.getSession(false);
         if (session == null || session.getAttribute("userId") == null) {
-            resp.getWriter().write(gson.toJson(Result.error(401, "请先登录")));
+            resp.getWriter().write(gson.toJson(Result.error(401, "Please login")));
             return;
         }
 
@@ -42,30 +41,27 @@ public class PaymentServlet extends HttpServlet {
         PaymentRequest paymentReq = gson.fromJson(reader, PaymentRequest.class);
 
         if (paymentReq.getOrderId() <= 0) {
-            resp.getWriter().write(gson.toJson(Result.error(400, "订单ID无效")));
+            resp.getWriter().write(gson.toJson(Result.error(400, "Invalid order ID")));
             return;
         }
 
-        // 验证订单是否存在且属于当前用户
         Order order = orderDAO.findById(paymentReq.getOrderId());
         if (order == null) {
-            resp.getWriter().write(gson.toJson(Result.error(404, "订单不存在")));
+            resp.getWriter().write(gson.toJson(Result.error(404, "Order doesn't exist")));
             return;
         }
 
         int userId = (int) session.getAttribute("userId");
         if (order.getCustomerId() != userId) {
-            resp.getWriter().write(gson.toJson(Result.error(403, "无权支付该订单")));
+            resp.getWriter().write(gson.toJson(Result.error(403, "You have no right to pay for this order")));
             return;
         }
 
-        // 检查订单状态
         if (!"pending".equals(order.getStatus())) {
-            resp.getWriter().write(gson.toJson(Result.error(400, "订单状态不允许支付")));
+            resp.getWriter().write(gson.toJson(Result.error(400, "This order status doesn't allow you to pay")));
             return;
         }
 
-        // 创建支付记录
         Payment payment = new Payment();
         payment.setOrderId(paymentReq.getOrderId());
         payment.setPaymentMethod(paymentReq.getMethod());
@@ -75,7 +71,6 @@ public class PaymentServlet extends HttpServlet {
         int paymentId = paymentDAO.createPayment(payment);
 
         if (paymentId > 0) {
-            // 更新订单状态
             orderDAO.updateStatus(paymentReq.getOrderId(), "paid");
 
             PaymentResponse response = new PaymentResponse();
@@ -84,7 +79,7 @@ public class PaymentServlet extends HttpServlet {
 
             resp.getWriter().write(gson.toJson(Result.success(response)));
         } else {
-            resp.getWriter().write(gson.toJson(Result.error(500, "支付失败，请稍后重试")));
+            resp.getWriter().write(gson.toJson(Result.error(500, "Failed to pay for order, please try again")));
         }
     }
 

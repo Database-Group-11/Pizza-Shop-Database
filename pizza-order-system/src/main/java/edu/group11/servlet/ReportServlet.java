@@ -36,7 +36,6 @@ public class ReportServlet extends HttpServlet {
 
         try {
             if (pathInfo == null || pathInfo.equals("/")) {
-                // 获取所有报表类型列表
                 JSONObject result = new JSONObject();
                 result.put("reportTypes", new JSONArray()
                         .put("sales/today")
@@ -74,24 +73,24 @@ public class ReportServlet extends HttpServlet {
                             handleMemberComparisonReport(request, response);
                             break;
                         default:
-                            sendError(response, HttpServletResponse.SC_BAD_REQUEST, "未知的报表类型");
+                            sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Unknown report type");
                             break;
                     }
                 } else {
-                    sendError(response, HttpServletResponse.SC_BAD_REQUEST, "无效的请求路径");
+                    sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Invalid request path");
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
-            sendError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "服务器错误: " + e.getMessage());
+            sendError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Server error: " + e.getMessage());
         }
     }
 
-    // 处理销售报表
+    // Handle with sales report
     private void handleSalesReport(HttpServletRequest request, HttpServletResponse response, String[] pathParts)
             throws IOException {
         if (pathParts.length < 3) {
-            sendError(response, HttpServletResponse.SC_BAD_REQUEST, "请指定销售报表类型");
+            sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Please assign sales report type");
             return;
         }
 
@@ -112,18 +111,18 @@ public class ReportServlet extends HttpServlet {
                 String startDate = request.getParameter("startDate");
                 String endDate = request.getParameter("endDate");
                 if (startDate == null || endDate == null) {
-                    sendError(response, HttpServletResponse.SC_BAD_REQUEST, "请提供开始日期和结束日期");
+                    sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Please provide starting and ending date");
                     return;
                 }
                 report = reportDAO.getSalesReportByDateRange(startDate, endDate);
                 break;
             default:
-                sendError(response, HttpServletResponse.SC_BAD_REQUEST, "无效的销售报表类型");
+                sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Invalid sales report type");
                 return;
         }
 
         if (report == null) {
-            sendError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "获取报表数据失败");
+            sendError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to get sales report data");
             return;
         }
 
@@ -137,7 +136,7 @@ public class ReportServlet extends HttpServlet {
         sendResponse(response, HttpServletResponse.SC_OK, result);
     }
 
-    // 处理热门披萨报表
+    // Handle with top pizza report
     private void handleTopPizzasReport(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
         String limitParam = request.getParameter("limit");
@@ -148,7 +147,6 @@ public class ReportServlet extends HttpServlet {
                 limit = Integer.parseInt(limitParam);
                 if (limit > 50) limit = 50;
             } catch (NumberFormatException e) {
-                // 使用默认值
             }
         }
 
@@ -168,7 +166,7 @@ public class ReportServlet extends HttpServlet {
         sendResponse(response, HttpServletResponse.SC_OK, result);
     }
 
-    // 处理分类销售报表
+    // Handle with category sales report
     private void handleCategorySalesReport(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
         Map<String, Object> categoryStats = reportDAO.getCategorySalesStatistics();
@@ -191,7 +189,7 @@ public class ReportServlet extends HttpServlet {
         sendResponse(response, HttpServletResponse.SC_OK, result);
     }
 
-    // 处理每日销售趋势报表
+    // Handle with daily sales trend report
     private void handleDailyTrendReport(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
         List<Map<String, Object>> dailyTrend = reportDAO.getDailySalesTrend();
@@ -209,7 +207,7 @@ public class ReportServlet extends HttpServlet {
         sendResponse(response, HttpServletResponse.SC_OK, result);
     }
 
-    // 处理小时销售分析报表
+    // Handle with hourly sales analysis report
     private void handleHourlyAnalysisReport(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
         List<Map<String, Object>> hourlyAnalysis = reportDAO.getHourlySalesAnalysis();
@@ -226,14 +224,14 @@ public class ReportServlet extends HttpServlet {
         sendResponse(response, HttpServletResponse.SC_OK, result);
     }
 
-    // 处理会员/非会员对比报表
+    // Handle with member/nonmember comparison report
     private void handleMemberComparisonReport(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
         Map<String, Object> comparison = reportDAO.getMemberVsNonMemberSales();
         JSONObject result = new JSONObject();
 
-        if (comparison.containsKey("会员")) {
-            Map<String, Object> member = (Map<String, Object>) comparison.get("会员");
+        if (comparison.containsKey("member")) {
+            Map<String, Object> member = (Map<String, Object>) comparison.get("member");
             JSONObject memberObj = new JSONObject();
             memberObj.put("orderCount", member.get("orderCount"));
             memberObj.put("totalRevenue", member.get("totalRevenue"));
@@ -241,8 +239,8 @@ public class ReportServlet extends HttpServlet {
             result.put("members", memberObj);
         }
 
-        if (comparison.containsKey("非会员")) {
-            Map<String, Object> nonMember = (Map<String, Object>) comparison.get("非会员");
+        if (comparison.containsKey("nonmember")) {
+            Map<String, Object> nonMember = (Map<String, Object>) comparison.get("nonmember");
             JSONObject nonMemberObj = new JSONObject();
             nonMemberObj.put("orderCount", nonMember.get("orderCount"));
             nonMemberObj.put("totalRevenue", nonMember.get("totalRevenue"));
@@ -253,7 +251,7 @@ public class ReportServlet extends HttpServlet {
         sendResponse(response, HttpServletResponse.SC_OK, result);
     }
 
-    // 发送成功响应（JSONObject）
+    // Send success response(JSONObject)
     private void sendResponse(HttpServletResponse response, int statusCode, JSONObject jsonData)
             throws IOException {
         response.setStatus(statusCode);
@@ -262,7 +260,7 @@ public class ReportServlet extends HttpServlet {
         out.flush();
     }
 
-    // 发送成功响应（JSONArray）
+    // Send success response(JSONArray)
     private void sendResponse(HttpServletResponse response, int statusCode, JSONArray jsonArray)
             throws IOException {
         response.setStatus(statusCode);
@@ -271,7 +269,7 @@ public class ReportServlet extends HttpServlet {
         out.flush();
     }
 
-    // 发送错误响应
+    // Send error response
     private void sendError(HttpServletResponse response, int statusCode, String message)
             throws IOException {
         response.setStatus(statusCode);

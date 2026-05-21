@@ -32,37 +32,37 @@ public class PizzaServlet extends HttpServlet {
         response.setCharacterEncoding("UTF-8");
 
         try {
-            // GET /api/pizzas - 获取所有披萨
+            // GET /api/pizzas - get all pizzas
             if (pathInfo == null || "/".equals(pathInfo)) {
                 List<Pizza> pizzas = pizzaDAO.getAllPizzas();
                 sendResponse(response, 200, "success", pizzasToJson(pizzas));
             }
-            // GET /api/pizzas/available - 获取可用披萨
+            // GET /api/pizzas/available - get available pizzas
             else if ("/available".equals(pathInfo)) {
                 List<Pizza> pizzas = pizzaDAO.getAvailable();
                 sendResponse(response, 200, "success", pizzasToJson(pizzas));
             }
-            // GET /api/pizzas/category/{category} - 按分类获取
+            // GET /api/pizzas/category/{category} - get by category
             else if (pathInfo.startsWith("/category/")) {
                 String category = pathInfo.substring(10);
                 List<Pizza> pizzas = pizzaDAO.getPizzasByCategory(category);
                 sendResponse(response, 200, "success", pizzasToJson(pizzas));
             }
-            // GET /api/pizzas/{id} - 获取单个披萨
+            // GET /api/pizzas/{id} - get a single pizza
             else {
                 int id = Integer.parseInt(pathInfo.substring(1));
                 Pizza pizza = pizzaDAO.getPizzaById(id);
                 if (pizza != null) {
                     sendResponse(response, 200, "success", pizzaToJson(pizza));
                 } else {
-                    sendResponse(response, 404, "披萨不存在", null);
+                    sendResponse(response, 404, "Pizza doesn't exist", null);
                 }
             }
         } catch (NumberFormatException e) {
-            sendResponse(response, 400, "参数格式错误", null);
+            sendResponse(response, 400, "Parameter format error", null);
         } catch (Exception e) {
             e.printStackTrace();
-            sendResponse(response, 500, "服务器内部错误: " + e.getMessage(), null);
+            sendResponse(response, 500, "Server inner error: " + e.getMessage(), null);
         }
     }
 
@@ -86,13 +86,13 @@ public class PizzaServlet extends HttpServlet {
 
             if (success) {
                 String data = "{\"pizza_id\":" + pizza.getPizzaId() + "}";
-                sendResponse(response, 200, "添加披萨成功", data);
+                sendResponse(response, 200, "Successfully added pizza", data);
             } else {
-                sendResponse(response, 500, "添加披萨失败", null);
+                sendResponse(response, 500, "Failed to add pizza", null);
             }
         } catch (Exception e) {
             e.printStackTrace();
-            sendResponse(response, 500, "服务器内部错误: " + e.getMessage(), null);
+            sendResponse(response, 500, "Server inner error: " + e.getMessage(), null);
         }
     }
 
@@ -105,7 +105,7 @@ public class PizzaServlet extends HttpServlet {
 
         try {
             if (pathInfo == null || "/".equals(pathInfo)) {
-                sendResponse(response, 400, "请指定披萨ID", null);
+                sendResponse(response, 400, "Please assign pizza ID", null);
                 return;
             }
 
@@ -123,15 +123,15 @@ public class PizzaServlet extends HttpServlet {
 
             boolean success = pizzaDAO.updatePizza(pizza);
             if (success) {
-                sendResponse(response, 200, "更新披萨成功", null);
+                sendResponse(response, 200, "Successfully update pizza", null);
             } else {
-                sendResponse(response, 500, "更新披萨失败", null);
+                sendResponse(response, 500, "Failed to add pizza", null);
             }
         } catch (NumberFormatException e) {
-            sendResponse(response, 400, "参数格式错误", null);
+            sendResponse(response, 400, "Parameter format error", null);
         } catch (Exception e) {
             e.printStackTrace();
-            sendResponse(response, 500, "服务器内部错误: " + e.getMessage(), null);
+            sendResponse(response, 500, "Server inner error: " + e.getMessage(), null);
         }
     }
 
@@ -144,19 +144,19 @@ public class PizzaServlet extends HttpServlet {
 
         try {
             if (pathInfo == null || "/".equals(pathInfo)) {
-                sendResponse(response, 400, "请指定披萨ID", null);
+                sendResponse(response, 400, "Please assign pizza ID", null);
                 return;
             }
 
             int id = Integer.parseInt(pathInfo.substring(1));
             boolean success = pizzaDAO.deletePizza(id);
             if (success) {
-                sendResponse(response, 200, "删除披萨成功", null);
+                sendResponse(response, 200, "Successfully delete pizza", null);
             } else {
-                sendResponse(response, 500, "删除披萨失败", null);
+                sendResponse(response, 500, "Failed to delete pizza", null);
             }
         } catch (NumberFormatException e) {
-            sendResponse(response, 400, "参数格式错误", null);
+            sendResponse(response, 400, "Parameter format error", null);
         } catch (Exception e) {
             e.printStackTrace();
             sendResponse(response, 500, "服务器内部错误: " + e.getMessage(), null);
@@ -210,7 +210,6 @@ public class PizzaServlet extends HttpServlet {
         int colonIndex = json.indexOf(":", keyIndex);
         if (colonIndex == -1) return null;
 
-        // 跳过空格
         while (colonIndex + 1 < json.length() && json.charAt(colonIndex + 1) == ' ') {
             colonIndex++;
         }
@@ -224,7 +223,6 @@ public class PizzaServlet extends HttpServlet {
             if (endQuote == -1) return null;
             return json.substring(startQuote + 1, endQuote);
         } else {
-            // 数字或布尔值
             int endValue = colonIndex + 1;
             while (endValue < json.length() &&
                     (Character.isDigit(json.charAt(endValue)) ||

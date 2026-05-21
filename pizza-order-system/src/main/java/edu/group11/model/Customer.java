@@ -11,10 +11,9 @@ public class Customer {
     private Date createTime;
     private Date updateTime;
 
-    // 无参构造器
+    // Constructors
     public Customer() {}
 
-    // 带参构造器
     public Customer(String name, String phone, String password, String address) {
         this.name = name;
         this.phone = phone;

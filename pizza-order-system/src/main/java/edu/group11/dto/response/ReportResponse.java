@@ -4,14 +4,14 @@ import java.util.List;
 import java.util.Map;
 
 public class ReportResponse {
-    private double totalRevenue;           // 总营业额
-    private int totalOrders;               // 总订单数
-    private double avgOrderValue;          // 平均订单金额
-    private int totalCustomers;            // 总顾客数
-    private List<Map<String, Object>> topPizzas;      // 畅销披萨排行
-    private List<Map<String, Object>> dailySales;     // 每日销售趋势
-    private Map<String, Object> categorySales;        // 分类销售统计
-    private Map<String, Object> memberComparison;     // 会员对比
+    private double totalRevenue;
+    private int totalOrders;
+    private double avgOrderValue;
+    private int totalCustomers;
+    private List<Map<String, Object>> topPizzas;
+    private List<Map<String, Object>> dailySales; // Daily sales trend
+    private Map<String, Object> categorySales; // Classified sales statistics
+    private Map<String, Object> memberComparison;
 
     public ReportResponse() {}
 

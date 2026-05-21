@@ -10,7 +10,7 @@ import java.util.Map;
 
 public class ToppingDAO {
 
-    // 获取所有配料
+    // Get all toppings
     public List<Map<String, Object>> getAllToppings() {
         List<Map<String, Object>> toppings = new ArrayList<>();
         String sql = "SELECT topping_id, name, price, stock_quantity FROM toppings";
@@ -28,7 +28,7 @@ public class ToppingDAO {
         return toppings;
     }
 
-    // 获取可用配料
+    // Get available toppings
     public List<Map<String, Object>> getAvailableToppings() {
         List<Map<String, Object>> toppings = new ArrayList<>();
         String sql = "SELECT topping_id, name, price, stock_quantity, category, image, available " +
@@ -47,7 +47,7 @@ public class ToppingDAO {
         return toppings;
     }
 
-    // 根据分类获取配料
+    // Get topping by category
     public List<Map<String, Object>> getToppingsByCategory(String category) {
         List<Map<String, Object>> toppings = new ArrayList<>();
         String sql = "SELECT topping_id, name, price, stock_quantity, category, image, available " +
@@ -69,7 +69,7 @@ public class ToppingDAO {
         return toppings;
     }
 
-    // 根据ID获取配料
+    // Get topping by ID
     public Map<String, Object> getToppingById(int toppingId) {
         String sql = "SELECT topping_id, name, price, stock_quantity, category, image, available " +
                 "FROM toppings WHERE topping_id = ?";
@@ -90,7 +90,7 @@ public class ToppingDAO {
         return null;
     }
 
-    // 获取热门配料（使用频率最高的）
+    // Get popular toppings (based on frequency)
     public List<Map<String, Object>> getPopularToppings(int limit) {
         List<Map<String, Object>> toppings = new ArrayList<>();
         String sql = "SELECT t.topping_id, t.name, t.price, t.stock_quantity, t.category, t.image, " +
@@ -120,7 +120,7 @@ public class ToppingDAO {
         return toppings;
     }
 
-    // 获取低库存配料（库存低于10）
+    // Get low stock toppings (lower than 10)
     public List<Map<String, Object>> getLowStockToppings() {
         List<Map<String, Object>> toppings = new ArrayList<>();
         String sql = "SELECT topping_id, name, price, stock_quantity, category, image, available " +
@@ -140,7 +140,7 @@ public class ToppingDAO {
         return toppings;
     }
 
-    // 获取指定披萨的配料
+    // Get specific toppings by pizza ID
     public List<Map<String, Object>> getToppingsByPizzaId(int pizzaId) {
         List<Map<String, Object>> toppings = new ArrayList<>();
         String sql = "SELECT t.topping_id, t.name, t.price, t.stock_quantity, t.category, t.image, " +
@@ -168,7 +168,7 @@ public class ToppingDAO {
         return toppings;
     }
 
-    // 创建配料
+    // Create topping
     public int createTopping(JSONObject jsonData) {
         String sql = "INSERT INTO toppings (name, price, stock_quantity, category, image, available) " +
                 "VALUES (?, ?, ?, ?, ?, ?)";
@@ -198,7 +198,7 @@ public class ToppingDAO {
         return -1;
     }
 
-    // 更新配料
+    // Update topping
     public boolean updateTopping(int toppingId, JSONObject jsonData) {
         StringBuilder sql = new StringBuilder("UPDATE toppings SET ");
         List<Object> params = new ArrayList<>();
@@ -249,9 +249,8 @@ public class ToppingDAO {
         return false;
     }
 
-    // 删除配料
+    // Delete topping
     public boolean deleteTopping(int toppingId) {
-        // 先检查是否有关联的披萨
         String checkSql = "SELECT COUNT(*) FROM pizza_toppings WHERE topping_id = ?";
         String deleteSql = "DELETE FROM toppings WHERE topping_id = ?";
 
@@ -261,7 +260,6 @@ public class ToppingDAO {
             checkStmt.setInt(1, toppingId);
             try (ResultSet rs = checkStmt.executeQuery()) {
                 if (rs.next() && rs.getInt(1) > 0) {
-                    // 有关联的披萨，不能删除
                     return false;
                 }
             }
@@ -276,7 +274,7 @@ public class ToppingDAO {
         return false;
     }
 
-    // 更新配料库存（减少库存）
+    // Update topping stock (reduce stock)
     public boolean updateStock(int toppingId, int quantity) {
         String sql = "UPDATE toppings SET stock_quantity = stock_quantity - ?, " +
                 "updated_at = NOW() WHERE topping_id = ? AND stock_quantity >= ?";
@@ -295,7 +293,7 @@ public class ToppingDAO {
         return false;
     }
 
-    // 设置配料库存（直接设置）
+    // Set topping stock
     public boolean setStock(int toppingId, int stock) {
         String sql = "UPDATE toppings SET stock_quantity = ?, updated_at = NOW() WHERE topping_id = ?";
 
@@ -312,7 +310,7 @@ public class ToppingDAO {
         return false;
     }
 
-    // 为披萨分配配料
+    // Assign topping to pizza
     public boolean assignToppingToPizza(int pizzaId, int toppingId, int quantity) {
         String sql = "INSERT INTO pizza_toppings (pizza_id, topping_id, quantity) VALUES (?, ?, ?)";
 
@@ -330,7 +328,7 @@ public class ToppingDAO {
         return false;
     }
 
-    // 移除披萨的配料
+    // Remove pizza topping
     public boolean removePizzaTopping(int pizzaToppingId) {
         String sql = "DELETE FROM pizza_toppings WHERE pizza_topping_id = ?";
 
@@ -345,7 +343,7 @@ public class ToppingDAO {
         return false;
     }
 
-    // 检查配料库存是否充足
+    // Check if the stock is adequate
     public boolean checkStock(int toppingId, int requiredQuantity) {
         String sql = "SELECT stock_quantity FROM toppings WHERE topping_id = ?";
 
@@ -365,7 +363,7 @@ public class ToppingDAO {
         return false;
     }
 
-    // 从ResultSet提取配料数据为Map
+    // Get topping data as a Map from ResultSet
     private Map<String, Object> extractToppingFromResultSet(ResultSet rs) throws SQLException {
         Map<String, Object> topping = new HashMap<>();
         topping.put("toppingId", rs.getInt("topping_id"));

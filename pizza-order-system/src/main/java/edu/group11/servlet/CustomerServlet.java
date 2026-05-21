@@ -36,7 +36,7 @@ public class CustomerServlet extends HttpServlet {
             handleRegister(req, resp);
         } else {
             resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            resp.getWriter().write(gson.toJson(Result.error(404, "接口不存在")));
+            resp.getWriter().write(gson.toJson(Result.error(404, "Interface doesn't exist")));
         }
     }
 
@@ -48,7 +48,7 @@ public class CustomerServlet extends HttpServlet {
         CustomerLoginRequest loginReq = gson.fromJson(reader, CustomerLoginRequest.class);
 
         if (loginReq.getPhone() == null || loginReq.getPassword() == null) {
-            resp.getWriter().write(gson.toJson(Result.error(400, "手机号和密码不能为空")));
+            resp.getWriter().write(gson.toJson(Result.error(400, "Phone number and password cannot be null")));
             return;
         }
 
@@ -70,7 +70,7 @@ public class CustomerServlet extends HttpServlet {
 
             resp.getWriter().write(gson.toJson(Result.success(response)));
         } else {
-            resp.getWriter().write(gson.toJson(Result.error(401, "手机号或密码错误")));
+            resp.getWriter().write(gson.toJson(Result.error(401, "Phone number or password is incorrect")));
         }
     }
 
@@ -78,16 +78,14 @@ public class CustomerServlet extends HttpServlet {
         BufferedReader reader = req.getReader();
         CustomerRegisterRequest registerReq = gson.fromJson(reader, CustomerRegisterRequest.class);
 
-        // 验证必填字段
         if (registerReq.getName() == null || registerReq.getPhone() == null ||
                 registerReq.getPassword() == null || registerReq.getAddress() == null) {
-            resp.getWriter().write(gson.toJson(Result.error(400, "所有字段都不能为空")));
+            resp.getWriter().write(gson.toJson(Result.error(400, "All fields cannot be null")));
             return;
         }
 
-        // 检查手机号是否已存在
         if (customerDAO.findByPhone(registerReq.getPhone()) != null) {
-            resp.getWriter().write(gson.toJson(Result.error(409, "手机号已注册")));
+            resp.getWriter().write(gson.toJson(Result.error(409, "This phone number already exists")));
             return;
         }
 
@@ -102,7 +100,7 @@ public class CustomerServlet extends HttpServlet {
         if (customerId > 0) {
             resp.getWriter().write(gson.toJson(Result.success(new CustomerRegisterResponse(customerId))));
         } else {
-            resp.getWriter().write(gson.toJson(Result.error(500, "注册失败，请稍后重试")));
+            resp.getWriter().write(gson.toJson(Result.error(500, "Failed to register, please try again")));
         }
     }
 }

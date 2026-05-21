@@ -6,7 +6,7 @@ public class Payment {
     private int paymentId;
     private int orderId;
     private String method;
-    private String paymentStatus; // pending, completed, failed
+    private String paymentStatus; // Includes pending, completed, failed
     private double amount;
     private Date paymentTime;
     private String transactionId;

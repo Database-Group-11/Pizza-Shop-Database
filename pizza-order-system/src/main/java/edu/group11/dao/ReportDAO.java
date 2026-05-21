@@ -9,13 +9,13 @@ import java.util.Map;
 
 public class ReportDAO {
 
-    // 销售统计报表类
+    // Sales data report
     public static class SalesReport {
-        private String period;  // 时间段
-        private double totalSales;  // 总销售额
-        private int totalOrders;  // 总订单数
-        private double averageOrderValue;  // 平均订单金额
-        private int totalPizzasSold;  // 总披萨销量
+        private String period;
+        private double totalSales;
+        private int totalOrders;
+        private double averageOrderValue;
+        private int totalPizzasSold;
 
         // Getters and Setters
         public String getPeriod() { return period; }
@@ -34,13 +34,13 @@ public class ReportDAO {
         public void setTotalPizzasSold(int totalPizzasSold) { this.totalPizzasSold = totalPizzasSold; }
     }
 
-    // 披萨销售排行
+    // Pizza sales ranking
     public static class PizzaSalesRanking {
         private int pizzaId;
         private String pizzaName;
         private int totalQuantity;
         private double totalRevenue;
-        private double percentage;  // 销售占比
+        private double percentage;  // Proportion of sales
 
         // Getters and Setters
         public int getPizzaId() { return pizzaId;
@@ -60,7 +60,7 @@ public class ReportDAO {
         public void setPercentage(double percentage) { this.percentage = percentage; }
     }
 
-    // 获取今日销售报表
+    // Get today's sales report
     public SalesReport getTodaySalesReport() {
         String sql = "SELECT " +
                 "COUNT(DISTINCT o.order_id) as total_orders, " +
@@ -76,7 +76,7 @@ public class ReportDAO {
 
             if (rs.next()) {
                 SalesReport report = new SalesReport();
-                report.setPeriod("今日");
+                report.setPeriod("Today");
                 report.setTotalOrders(rs.getInt("total_orders"));
                 report.setTotalPizzasSold(rs.getInt("total_pizzas"));
                 report.setTotalSales(rs.getDouble("total_sales"));
@@ -93,7 +93,7 @@ public class ReportDAO {
         return null;
     }
 
-    // 获取本周销售报表
+    // Get this week's sales report
     public SalesReport getWeeklySalesReport() {
         String sql = "SELECT " +
                 "COUNT(DISTINCT o.order_id) as total_orders, " +
@@ -109,7 +109,7 @@ public class ReportDAO {
 
             if (rs.next()) {
                 SalesReport report = new SalesReport();
-                report.setPeriod("本周");
+                report.setPeriod("This week");
                 report.setTotalOrders(rs.getInt("total_orders"));
                 report.setTotalPizzasSold(rs.getInt("total_pizzas"));
                 report.setTotalSales(rs.getDouble("total_sales"));
@@ -126,7 +126,7 @@ public class ReportDAO {
         return null;
     }
 
-    // 获取本月销售报表
+    // Get this month's sales report
     public SalesReport getMonthlySalesReport() {
         String sql = "SELECT " +
                 "COUNT(DISTINCT o.order_id) as total_orders, " +
@@ -144,7 +144,7 @@ public class ReportDAO {
 
             if (rs.next()) {
                 SalesReport report = new SalesReport();
-                report.setPeriod("本月");
+                report.setPeriod("This month");
                 report.setTotalOrders(rs.getInt("total_orders"));
                 report.setTotalPizzasSold(rs.getInt("total_pizzas"));
                 report.setTotalSales(rs.getDouble("total_sales"));
@@ -161,7 +161,7 @@ public class ReportDAO {
         return null;
     }
 
-    // 获取指定日期范围的销售报表
+    // Get sales report of a specific session
     public SalesReport getSalesReportByDateRange(String startDate, String endDate) {
         String sql = "SELECT " +
                 "COUNT(DISTINCT o.order_id) as total_orders, " +
@@ -181,7 +181,7 @@ public class ReportDAO {
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
                     SalesReport report = new SalesReport();
-                    report.setPeriod(startDate + " 至 " + endDate);
+                    report.setPeriod(startDate + " to " + endDate);
                     report.setTotalOrders(rs.getInt("total_orders"));
                     report.setTotalPizzasSold(rs.getInt("total_pizzas"));
                     report.setTotalSales(rs.getDouble("total_sales"));
@@ -199,7 +199,7 @@ public class ReportDAO {
         return null;
     }
 
-    // 获取热门披萨排行榜（按销量）
+    // Get top-selling pizza ranking
     public List<PizzaSalesRanking> getTopSellingPizzas(int limit) {
         List<PizzaSalesRanking> rankings = new ArrayList<>();
         String sql = "SELECT " +
@@ -215,7 +215,6 @@ public class ReportDAO {
                 "ORDER BY total_quantity DESC " +
                 "LIMIT ?";
 
-        // 先获取总销量用于计算百分比
         int totalAllSales = getTotalPizzasSold();
 
         try (Connection conn = DBUtil.getConnection();
@@ -247,7 +246,7 @@ public class ReportDAO {
         return rankings;
     }
 
-    // 获取所有披萨的总销量
+    // Get total pizza sold
     private int getTotalPizzasSold() {
         String sql = "SELECT SUM(oi.quantity) as total FROM order_items oi " +
                 "JOIN orders o ON oi.order_id = o.order_id " +
@@ -266,7 +265,7 @@ public class ReportDAO {
         return 0;
     }
 
-    // 获取分类销售统计
+    // Get category sales statistics
     public Map<String, Object> getCategorySalesStatistics() {
         Map<String, Object> statistics = new HashMap<>();
         String sql = "SELECT " +
@@ -307,7 +306,7 @@ public class ReportDAO {
         return statistics;
     }
 
-    // 获取每日销售趋势（最近7天）
+    // Get daily sales trend (based on recent 7 days)
     public List<Map<String, Object>> getDailySalesTrend() {
         List<Map<String, Object>> trend = new ArrayList<>();
         String sql = "SELECT " +
@@ -340,7 +339,7 @@ public class ReportDAO {
         return trend;
     }
 
-    // 获取小时销售分析（哪个时间段订单最多）
+    // Get hourly sales analysis (which period has the most orders)
     public List<Map<String, Object>> getHourlySalesAnalysis() {
         List<Map<String, Object>> hourlyAnalysis = new ArrayList<>();
         String sql = "SELECT " +
@@ -370,11 +369,11 @@ public class ReportDAO {
         return hourlyAnalysis;
     }
 
-    // 获取会员/非会员销售对比
+    // Get member/nonmember sales
     public Map<String, Object> getMemberVsNonMemberSales() {
         Map<String, Object> comparison = new HashMap<>();
         String sql = "SELECT " +
-                "CASE WHEN o.user_id IS NOT NULL THEN '会员' ELSE '非会员' END as customer_type, " +
+                "CASE WHEN o.user_id IS NOT NULL THEN 'member' ELSE 'nonmember' END as customer_type, " +
                 "COUNT(DISTINCT o.order_id) as order_count, " +
                 "SUM(oi.subtotal) as total_revenue, " +
                 "AVG(oi.subtotal) as average_order_value " +

@@ -12,9 +12,7 @@ public class OrderDAO {
 
     private OrderItemDAO orderItemDAO = new OrderItemDAO();
 
-    /**
-     * 创建订单（包含订单项）
-     */
+    // Create order (including order item)
     public int createOrder(Order order, List<OrderItem> items) throws SQLException {
         Connection conn = null;
         PreparedStatement ps = null;
@@ -23,9 +21,8 @@ public class OrderDAO {
 
         try {
             conn = DBUtil.getConnection();
-            conn.setAutoCommit(false);  // 开始事务
+            conn.setAutoCommit(false);
 
-            // 1. 插入订单
             String orderSql = "INSERT INTO orders (order_no, customer_id, total_amount, status, delivery_address, payment_method) VALUES (?, ?, ?, ?, ?, ?)";
             ps = conn.prepareStatement(orderSql, Statement.RETURN_GENERATED_KEYS);
             ps.setString(1, order.getOrderNo());
@@ -40,21 +37,20 @@ public class OrderDAO {
             if (rs.next()) {
                 orderId = rs.getInt(1);
             } else {
-                throw new SQLException("创建订单失败");
+                throw new SQLException("Failed to create order");
             }
 
-            // 2. 插入订单项
             for (OrderItem item : items) {
                 item.setOrderId(orderId);
                 orderItemDAO.createOrderItem(conn, item);
             }
 
-            conn.commit();  // 提交事务
+            conn.commit();
             return orderId;
 
         } catch (SQLException e) {
             if (conn != null) {
-                conn.rollback();  // 回滚事务
+                conn.rollback();
             }
             e.printStackTrace();
             throw e;
@@ -68,9 +64,7 @@ public class OrderDAO {
         }
     }
 
-    /**
-     * 根据用户ID查询订单列表
-     */
+    // Find order list by customer ID
     public List<Order> findByCustomerId(int customerId) {
         List<Order> orders = new ArrayList<>();
         String sql = "SELECT * FROM orders WHERE customer_id = ? ORDER BY order_time DESC";
@@ -83,7 +77,6 @@ public class OrderDAO {
 
             while (rs.next()) {
                 Order order = extractOrderFromResultSet(rs);
-                // 加载订单项
                 order.setItems(orderItemDAO.findByOrderId(order.getOrderId()));
                 orders.add(order);
             }
@@ -93,9 +86,7 @@ public class OrderDAO {
         return orders;
     }
 
-    /**
-     * 根据订单ID查询订单详情
-     */
+    // Find order details by order ID
     public Order findById(int orderId) {
         String sql = "SELECT * FROM orders WHERE order_id = ?";
 
@@ -116,9 +107,7 @@ public class OrderDAO {
         return null;
     }
 
-    /**
-     * 更新订单状态
-     */
+    //  Update order status
     public boolean updateStatus(int orderId, String status) {
         String sql = "UPDATE orders SET status = ? WHERE order_id = ?";
         try (Connection conn = DBUtil.getConnection();
