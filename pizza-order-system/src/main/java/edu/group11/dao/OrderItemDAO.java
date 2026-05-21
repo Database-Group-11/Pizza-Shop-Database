@@ -13,15 +13,14 @@ public class OrderItemDAO {
      * 创建订单项（使用传入的连接，支持事务）
      */
     public void createOrderItem(Connection conn, OrderItem item) throws SQLException {
-        String sql = "INSERT INTO order_items (order_id, pizza_id, pizza_name, quantity, unit_price, subtotal) VALUES (?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO order_items (order_id, pizza_id, quantity, unit_price, subtotal) VALUES (?, ?, ?, ?, ?)";
 
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, item.getOrderId());
             ps.setInt(2, item.getPizzaId());
-            ps.setString(3, item.getPizzaName());
-            ps.setInt(4, item.getQuantity());
-            ps.setDouble(5, item.getUnitPrice());
-            ps.setDouble(6, item.getSubtotal());
+            ps.setInt(3, item.getQuantity());
+            ps.setDouble(4, item.getUnitPrice());
+            ps.setDouble(5, item.getSubtotal());
             ps.executeUpdate();
         }
     }
@@ -31,7 +30,7 @@ public class OrderItemDAO {
      */
     public List<OrderItem> findByOrderId(int orderId) {
         List<OrderItem> items = new ArrayList<>();
-        String sql = "SELECT * FROM order_items WHERE order_id = ?";
+        String sql = "SELECT order_item_id, order_id, pizza_id, quantity, unit_price, subtotal FROM order_items WHERE order_id = ?";
 
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -44,7 +43,7 @@ public class OrderItemDAO {
                 item.setOrderItemId(rs.getInt("order_item_id"));
                 item.setOrderId(rs.getInt("order_id"));
                 item.setPizzaId(rs.getInt("pizza_id"));
-                item.setPizzaName(rs.getString("pizza_name"));
+                // item.setPizzaName(rs.getString("pizza_name"));  // 注释掉
                 item.setQuantity(rs.getInt("quantity"));
                 item.setUnitPrice(rs.getDouble("unit_price"));
                 item.setSubtotal(rs.getDouble("subtotal"));
