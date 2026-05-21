@@ -30,26 +30,26 @@
 </head>
 <body>
 <nav class="navbar">
-    <a href=" " class="navbar-brand">🍕 披萨外卖</a >
+    <a href=" " class="navbar-brand">🍕 Pizza-shop takeout</a >
     <div class="navbar-menu">
-        <a href="menu.html">菜单</a >
-        <a href="cart.html">购物车 <span id="cartCount" class="cart-badge">0</span></a >
-        <a href="order_history.html">我的订单</a >
+        <a href="menu.html">menu</a >
+        <a href="cart.html">cart <span id="cartCount" class="cart-badge">0</span></a >
+        <a href="order_history.html">my order</a >
         <span id="userNameDisplay" style="color:#666;"></span>
-        <a href="#" id="logoutBtn">退出</a >
+        <a href="#" id="logoutBtn">exit</a >
     </div>
 </nav>
 
 <div class="container">
-    <div class="pizza-info" id="pizzaInfo">加载中...</div>
+    <div class="pizza-info" id="pizzaInfo">loading...</div>
     <div class="toppings-section">
-        <h3>📋 选择配料</h3>
-        <div id="toppingsList">加载中...</div>
+        <h3>📋 choose toppings</h3>
+        <div id="toppingsList">loading...</div>
     </div>
 </div>
 
 <div class="bottom-bar">
-    <div><button class="back-btn" onclick="history.back()">返回</button></div>
+    <div><button class="back-btn" onclick="history.back()">back</button></div>
     <div class="quantity-control">
         <button onclick="changeQuantity(-1)">-</button>
         <span id="quantity">1</span>
@@ -57,7 +57,7 @@
     </div>
     <div>
         <span class="total-price">¥<span id="totalPrice">0</span></span>
-        <button class="add-to-cart-btn" onclick="addCurrentToCart()">加入购物车</button>
+        <button class="add-to-cart-btn" onclick="addCurrentToCart()">add to cart</button>
     </div>
 </div>
 
@@ -112,25 +112,25 @@
         try {
             const response = await fetch(`${API_BASE}/api/pizzas`);
             const result = await response.json();
-            console.log('所有披萨:', result);
+            console.log('all pizza:', result);
 
             if (result.code === 200) {
                 currentPizza = result.data.find(p => (p.pizza_id || p.pizzaId) == pizzaId);
-                console.log('找到的披萨:', currentPizza);
+                console.log('find pizza:', currentPizza);
 
                 if (currentPizza) {
                     renderPizzaInfo();
                     loadToppings();
                 } else {
-                    alert('披萨不存在');
+                    alert('pizza do not exist');
                     window.location.href = 'menu.html';
                 }
             } else {
-                alert('加载披萨失败');
+                alert('fail to load pizza');
             }
         } catch (error) {
-            console.error('加载披萨失败:', error);
-            alert('网络错误');
+            console.error('fail to load pizza:', error);
+            alert('internet error');
         }
     }
 
@@ -147,7 +147,7 @@
                 < img src="${image}" alt="${name}">
                 <h2>${name}</h2>
                 <p style="color:#666; margin:8px 0;">${description}</p >
-                <div class="price">基础价：¥${price.toFixed(2)}</div>
+                <div class="price">basic price：¥${price.toFixed(2)}</div>
             `;
         updateTotalPrice();
     }
@@ -160,7 +160,7 @@
                 renderToppings(result.data);
             }
         } catch (error) {
-            console.error('加载配料失败:', error);
+            console.error('fail to load toppings:', error);
             document.getElementById('toppingsList').innerHTML = '<div>加载配料失败</div>';
         }
     }
@@ -170,7 +170,7 @@
         if (!container) return;
 
         if (!toppings || toppings.length === 0) {
-            container.innerHTML = '<div>暂无配料</div>';
+            container.innerHTML = '<div>no toppings now</div>';
             return;
         }
 
