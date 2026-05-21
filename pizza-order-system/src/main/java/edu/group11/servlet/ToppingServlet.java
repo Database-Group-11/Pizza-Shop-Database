@@ -28,7 +28,6 @@ public class ToppingServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        System.out.println("===== ToppingServlet doGet 被调用了 =====");
 
         String pathInfo = request.getPathInfo();
         response.setContentType("application/json");
@@ -38,7 +37,12 @@ public class ToppingServlet extends HttpServlet {
             if (pathInfo == null || pathInfo.equals("/")) {
                 // GET /api/toppings/ - 获取所有可用配料
                 List<Map<String, Object>> toppings = toppingDAO.getAllToppings();
-                sendResponse(response, HttpServletResponse.SC_OK, convertToJSONArray(toppings));
+                // 修改：包装成统一格式
+                JSONObject result = new JSONObject();
+                result.put("code", 200);
+                result.put("message", "success");
+                result.put("data", convertToJSONArray(toppings));
+                sendResponse(response, HttpServletResponse.SC_OK, result);
             } else {
                 String[] pathParts = pathInfo.split("/");
                 if (pathParts.length == 2) {
@@ -46,46 +50,61 @@ public class ToppingServlet extends HttpServlet {
 
                     switch (action) {
                         case "available":
-                            // GET /api/toppings/available - 获取可用配料
                             List<Map<String, Object>> availableToppings = toppingDAO.getAvailableToppings();
-                            sendResponse(response, HttpServletResponse.SC_OK, convertToJSONArray(availableToppings));
+                            JSONObject availableResult = new JSONObject();
+                            availableResult.put("code", 200);
+                            availableResult.put("message", "success");
+                            availableResult.put("data", convertToJSONArray(availableToppings));
+                            sendResponse(response, HttpServletResponse.SC_OK, availableResult);
                             break;
 
                         case "category":
-                            // GET /api/toppings/category?type=meat
                             String category = request.getParameter("type");
                             if (category != null && !category.isEmpty()) {
                                 List<Map<String, Object>> toppingsByCategory = toppingDAO.getToppingsByCategory(category);
-                                sendResponse(response, HttpServletResponse.SC_OK, convertToJSONArray(toppingsByCategory));
+                                JSONObject categoryResult = new JSONObject();
+                                categoryResult.put("code", 200);
+                                categoryResult.put("message", "success");
+                                categoryResult.put("data", convertToJSONArray(toppingsByCategory));
+                                sendResponse(response, HttpServletResponse.SC_OK, categoryResult);
                             } else {
                                 sendError(response, HttpServletResponse.SC_BAD_REQUEST, "缺少分类参数");
                             }
                             break;
 
                         case "popular":
-                            // GET /api/toppings/popular?limit=5
                             String limitParam = request.getParameter("limit");
                             int limit = 5;
                             if (limitParam != null && !limitParam.isEmpty()) {
                                 limit = Integer.parseInt(limitParam);
                             }
                             List<Map<String, Object>> popularToppings = toppingDAO.getPopularToppings(limit);
-                            sendResponse(response, HttpServletResponse.SC_OK, convertToJSONArray(popularToppings));
+                            JSONObject popularResult = new JSONObject();
+                            popularResult.put("code", 200);
+                            popularResult.put("message", "success");
+                            popularResult.put("data", convertToJSONArray(popularToppings));
+                            sendResponse(response, HttpServletResponse.SC_OK, popularResult);
                             break;
 
                         case "low-stock":
-                            // GET /api/toppings/low-stock - 获取低库存配料
                             List<Map<String, Object>> lowStockToppings = toppingDAO.getLowStockToppings();
-                            sendResponse(response, HttpServletResponse.SC_OK, convertToJSONArray(lowStockToppings));
+                            JSONObject lowStockResult = new JSONObject();
+                            lowStockResult.put("code", 200);
+                            lowStockResult.put("message", "success");
+                            lowStockResult.put("data", convertToJSONArray(lowStockToppings));
+                            sendResponse(response, HttpServletResponse.SC_OK, lowStockResult);
                             break;
 
                         default:
-                            // GET /api/toppings/{id}
                             try {
                                 int toppingId = Integer.parseInt(action);
                                 Map<String, Object> topping = toppingDAO.getToppingById(toppingId);
                                 if (topping != null && !topping.isEmpty()) {
-                                    sendResponse(response, HttpServletResponse.SC_OK, convertToJSON(topping));
+                                    JSONObject singleResult = new JSONObject();
+                                    singleResult.put("code", 200);
+                                    singleResult.put("message", "success");
+                                    singleResult.put("data", convertToJSON(topping));
+                                    sendResponse(response, HttpServletResponse.SC_OK, singleResult);
                                 } else {
                                     sendError(response, HttpServletResponse.SC_NOT_FOUND, "配料未找到");
                                 }
@@ -95,11 +114,14 @@ public class ToppingServlet extends HttpServlet {
                             break;
                     }
                 } else if (pathParts.length == 3 && "pizza".equals(pathParts[1])) {
-                    // GET /api/toppings/pizza/{pizzaId}
                     try {
                         int pizzaId = Integer.parseInt(pathParts[2]);
                         List<Map<String, Object>> pizzaToppings = toppingDAO.getToppingsByPizzaId(pizzaId);
-                        sendResponse(response, HttpServletResponse.SC_OK, convertToJSONArray(pizzaToppings));
+                        JSONObject pizzaResult = new JSONObject();
+                        pizzaResult.put("code", 200);
+                        pizzaResult.put("message", "success");
+                        pizzaResult.put("data", convertToJSONArray(pizzaToppings));
+                        sendResponse(response, HttpServletResponse.SC_OK, pizzaResult);
                     } catch (NumberFormatException e) {
                         sendError(response, HttpServletResponse.SC_BAD_REQUEST, "无效的披萨ID");
                     }

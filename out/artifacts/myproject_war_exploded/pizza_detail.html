@@ -61,12 +61,9 @@
     </div>
 </div>
 
-<script>
-    const API_BASE = 'http://localhost:8080';
-</script>
 <script src="js/main.js"></script>
 <script>
-    
+
     let currentPizza = null;
     let currentQuantity = 1;
     let selectedToppings = [];
@@ -150,7 +147,7 @@
                 < img src="${image}" alt="${name}">
                 <h2>${name}</h2>
                 <p style="color:#666; margin:8px 0;">${description}</p >
-                <div class="price">基础价：¥${price}</div>
+                <div class="price">基础价：¥${price.toFixed(2)}</div>
             `;
         updateTotalPrice();
     }
@@ -178,7 +175,7 @@
         }
 
         container.innerHTML = toppings.map(topping => {
-            const toppingId = topping.topping_id || topping.toppingId;
+            const toppingId = topping.toppingId;
             const name = topping.name;
             const price = topping.price;
             return `
@@ -248,7 +245,7 @@
         const basePrice = currentPizza.base_price || currentPizza.basePrice || 0;
         const toppingsTotal = selectedToppings.reduce((sum, t) => sum + (t.price * t.quantity), 0);
         const total = (basePrice + toppingsTotal) * currentQuantity;
-        document.getElementById('totalPrice').textContent = total;
+        document.getElementById('totalPrice').textContent = total.toFixed(2);
     }
 
     function addCurrentToCart() {
