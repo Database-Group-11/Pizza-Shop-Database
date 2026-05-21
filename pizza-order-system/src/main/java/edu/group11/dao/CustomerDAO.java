@@ -10,7 +10,7 @@ import java.util.List;
 public class CustomerDAO {
 
     /**
-     * 用户注册
+     * Users' registration
      */
     public int register(Customer customer) {
         String sql = "INSERT INTO customers (name, phone, password, address) VALUES (?, ?, ?, ?)";
@@ -36,7 +36,7 @@ public class CustomerDAO {
     }
 
     /**
-     * 用户登录
+     * Users' login
      */
     public Customer login(String phone, String password) {
         String sql = "SELECT * FROM customers WHERE phone = ? AND password = ?";
@@ -57,7 +57,7 @@ public class CustomerDAO {
     }
 
     /**
-     * 根据ID查询用户
+     * Find users by ID
      */
     public Customer findById(int customerId) {
         String sql = "SELECT * FROM customers WHERE customer_id = ?";
@@ -76,7 +76,7 @@ public class CustomerDAO {
     }
 
     /**
-     * 根据手机号查询用户
+     * Find users by phone number
      */
     public Customer findByPhone(String phone) {
         String sql = "SELECT * FROM customers WHERE phone = ?";
@@ -95,7 +95,7 @@ public class CustomerDAO {
     }
 
     /**
-     * 更新用户信息
+     * Update users' information
      */
     public boolean update(Customer customer) {
         String sql = "UPDATE customers SET name = ?, phone = ?, address = ? WHERE customer_id = ?";

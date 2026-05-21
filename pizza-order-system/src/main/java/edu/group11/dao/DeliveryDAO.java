@@ -10,7 +10,7 @@ import java.util.Map;
 
 public class DeliveryDAO {
 
-    // 创建配送记录
+    // Create delivery history
     public int createDelivery(JSONObject jsonData) {
         String sql = "INSERT INTO deliveries (order_id, delivery_address, contact_phone, " +
                 "delivery_status, estimated_delivery_time, driver_name, driver_phone, " +
@@ -52,7 +52,7 @@ public class DeliveryDAO {
         return -1;
     }
 
-    // 根据订单ID获取配送信息
+    // Get delivery by order ID
     public Map<String, Object> getDeliveryByOrderId(int orderId) {
         String sql = "SELECT delivery_id, order_id, delivery_address, contact_phone, " +
                 "delivery_status, estimated_delivery_time, actual_delivery_time, " +
@@ -76,7 +76,7 @@ public class DeliveryDAO {
         return null;
     }
 
-    // 根据配送ID获取配送信息
+    // Get delivery by delivery ID
     public Map<String, Object> getDeliveryById(int deliveryId) {
         String sql = "SELECT delivery_id, order_id, delivery_address, contact_phone, " +
                 "delivery_status, estimated_delivery_time, actual_delivery_time, " +
@@ -100,7 +100,7 @@ public class DeliveryDAO {
         return null;
     }
 
-    // 获取所有进行中的配送
+    // Get all active deliveries
     public List<Map<String, Object>> getActiveDeliveries() {
         List<Map<String, Object>> deliveries = new ArrayList<>();
         String sql = "SELECT delivery_id, order_id, delivery_address, contact_phone, " +
@@ -123,7 +123,7 @@ public class DeliveryDAO {
         return deliveries;
     }
 
-    // 获取指定骑手的配送任务
+    // Get specific delivery by driver
     public List<Map<String, Object>> getDeliveriesByDriver(String driverName) {
         List<Map<String, Object>> deliveries = new ArrayList<>();
         String sql = "SELECT delivery_id, order_id, delivery_address, contact_phone, " +
@@ -150,7 +150,7 @@ public class DeliveryDAO {
         return deliveries;
     }
 
-    // 更新配送状态
+    // Update delivery status
     public boolean updateDeliveryStatus(int deliveryId, String status) {
         String sql = "UPDATE deliveries SET delivery_status = ?, updated_at = NOW() WHERE delivery_id = ?";
 
@@ -167,7 +167,7 @@ public class DeliveryDAO {
         return false;
     }
 
-    // 更新配送状态并记录实际送达时间
+    // Update delivery status and record the delivery time
     public boolean completeDelivery(int deliveryId) {
         String sql = "UPDATE deliveries SET delivery_status = 'delivered', " +
                 "actual_delivery_time = NOW(), updated_at = NOW() WHERE delivery_id = ?";
@@ -184,7 +184,7 @@ public class DeliveryDAO {
         return false;
     }
 
-    // 取消配送
+    // Cancel delivery
     public boolean cancelDelivery(int deliveryId) {
         String sql = "UPDATE deliveries SET delivery_status = 'cancelled', updated_at = NOW() WHERE delivery_id = ?";
 
@@ -200,7 +200,7 @@ public class DeliveryDAO {
         return false;
     }
 
-    // 分配骑手
+    // Assign driver
     public boolean assignDriver(int deliveryId, String driverName, String driverPhone) {
         String sql = "UPDATE deliveries SET driver_name = ?, driver_phone = ?, " +
                 "delivery_status = 'preparing', updated_at = NOW() WHERE delivery_id = ?";
@@ -219,7 +219,7 @@ public class DeliveryDAO {
         return false;
     }
 
-    // 标记为已出库（开始配送）
+    // Mark as started
     public boolean startDelivery(int deliveryId) {
         String sql = "UPDATE deliveries SET delivery_status = 'out_for_delivery', updated_at = NOW() WHERE delivery_id = ?";
 
@@ -235,7 +235,7 @@ public class DeliveryDAO {
         return false;
     }
 
-    // 更新配送追踪号
+    // Update tracking number
     public boolean updateTrackingNumber(int deliveryId, String trackingNumber) {
         String sql = "UPDATE deliveries SET tracking_number = ?, updated_at = NOW() WHERE delivery_id = ?";
 
@@ -252,7 +252,7 @@ public class DeliveryDAO {
         return false;
     }
 
-    // 添加配送备注
+    // Add notes of delivery
     public boolean addDeliveryNotes(int deliveryId, String notes) {
         String sql = "UPDATE deliveries SET delivery_notes = CONCAT(IFNULL(delivery_notes, ''), ?, '\\n'), " +
                 "updated_at = NOW() WHERE delivery_id = ?";
@@ -272,7 +272,7 @@ public class DeliveryDAO {
         return false;
     }
 
-    // 获取超时配送（超过预计送达时间还未送达）
+    // Get order due deliveries (if the deliveries are not completed on time)
     public List<Map<String, Object>> getOverdueDeliveries() {
         List<Map<String, Object>> deliveries = new ArrayList<>();
         String sql = "SELECT delivery_id, order_id, delivery_address, contact_phone, " +
@@ -296,7 +296,7 @@ public class DeliveryDAO {
         return deliveries;
     }
 
-    // 获取今日配送统计
+    // Get today's delivery statistics
     public Map<String, Object> getTodayDeliveryStatistics() {
         Map<String, Object> stats = new HashMap<>();
         String sql = "SELECT " +
@@ -325,7 +325,7 @@ public class DeliveryDAO {
         return stats;
     }
 
-    // 从ResultSet提取配送数据为Map
+    // Get delivery data as a Map from ResultSel
     private Map<String, Object> extractDeliveryFromResultSet(ResultSet rs) throws SQLException {
         Map<String, Object> delivery = new HashMap<>();
         delivery.put("deliveryId", rs.getInt("delivery_id"));
