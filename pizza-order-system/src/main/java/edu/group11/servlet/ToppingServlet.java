@@ -294,7 +294,7 @@ public class ToppingServlet extends HttpServlet {
         }
     }
 
-    // Handle with assigning topping to pizza
+    // Handle assigning topping to pizza
     private void handleAssignTopping(JSONObject jsonData, HttpServletResponse response)
             throws IOException {
         if (!jsonData.has("pizzaId") || !jsonData.has("toppingId")) {
@@ -317,7 +317,7 @@ public class ToppingServlet extends HttpServlet {
         }
     }
 
-    // Handle with updating stock
+    // Handle updating stock
     private void handleUpdateStock(JSONObject jsonData, HttpServletResponse response)
             throws IOException {
         if (!jsonData.has("toppingId") || !jsonData.has("stock")) {

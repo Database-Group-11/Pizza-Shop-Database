@@ -280,7 +280,7 @@ public class DeliveryServlet extends HttpServlet {
         }
     }
 
-    // Handle with assigning driver
+    // Handle assigning driver
     private void handleAssignDriver(JSONObject jsonData, HttpServletResponse response)
             throws IOException {
         if (!jsonData.has("deliveryId") || !jsonData.has("driverName")) {
@@ -324,7 +324,7 @@ public class DeliveryServlet extends HttpServlet {
         }
     }
 
-    // Handle with completing delivery
+    // Handle completing delivery
     private void handleCompleteDelivery(JSONObject jsonData, HttpServletResponse response)
             throws IOException {
         if (!jsonData.has("deliveryId")) {
@@ -345,7 +345,7 @@ public class DeliveryServlet extends HttpServlet {
         }
     }
 
-    // Handle with cancelling delivery
+    // Handle cancelling delivery
     private void handleCancelDelivery(JSONObject jsonData, HttpServletResponse response)
             throws IOException {
         if (!jsonData.has("deliveryId")) {
@@ -366,7 +366,7 @@ public class DeliveryServlet extends HttpServlet {
         }
     }
 
-    // Handle with updating tracking number
+    // Handle updating tracking number
     private void handleUpdateTracking(JSONObject jsonData, HttpServletResponse response)
             throws IOException {
         if (!jsonData.has("deliveryId") || !jsonData.has("trackingNumber")) {
@@ -388,7 +388,7 @@ public class DeliveryServlet extends HttpServlet {
         }
     }
 
-    // Handle with adding notes
+    // Handle adding notes
     private void handleAddNotes(JSONObject jsonData, HttpServletResponse response)
             throws IOException {
         if (!jsonData.has("deliveryId") || !jsonData.has("notes")) {

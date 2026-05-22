@@ -6,9 +6,9 @@ import java.nio.file.*;
 public class DBUtilTemplate {
     private static final String DRIVER = "com.mysql.cj.jdbc.Driver";
     private static final String URL = "jdbc:mysql://localhost:3306/pizza_shop?useSSL=false&serverTimezone=Asia/Shanghai&characterEncoding=utf-8&allowPublicKeyRetrieval=true";
-    // TODO: 修改为你的MySQL用户名
+    // TODO: change to your MySQL user name
     private static final String USERNAME = "root";
-    // TODO: 修改为你的MySQL密码
+    // TODO: change to your ySQL password
     private static final String PASSWORD = "123456";
 
     private static ThreadLocal<Connection> threadLocal = new ThreadLocal<>();

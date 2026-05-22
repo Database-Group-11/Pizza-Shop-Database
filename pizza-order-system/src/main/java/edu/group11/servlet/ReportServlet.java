@@ -86,7 +86,7 @@ public class ReportServlet extends HttpServlet {
         }
     }
 
-    // Handle with sales report
+    // Handle sales report
     private void handleSalesReport(HttpServletRequest request, HttpServletResponse response, String[] pathParts)
             throws IOException {
         if (pathParts.length < 3) {
@@ -136,7 +136,7 @@ public class ReportServlet extends HttpServlet {
         sendResponse(response, HttpServletResponse.SC_OK, result);
     }
 
-    // Handle with top pizza report
+    // Handle top pizza report
     private void handleTopPizzasReport(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
         String limitParam = request.getParameter("limit");
@@ -166,7 +166,7 @@ public class ReportServlet extends HttpServlet {
         sendResponse(response, HttpServletResponse.SC_OK, result);
     }
 
-    // Handle with category sales report
+    // Handle category sales report
     private void handleCategorySalesReport(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
         Map<String, Object> categoryStats = reportDAO.getCategorySalesStatistics();
@@ -189,7 +189,7 @@ public class ReportServlet extends HttpServlet {
         sendResponse(response, HttpServletResponse.SC_OK, result);
     }
 
-    // Handle with daily sales trend report
+    // Handle daily sales trend report
     private void handleDailyTrendReport(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
         List<Map<String, Object>> dailyTrend = reportDAO.getDailySalesTrend();
@@ -207,7 +207,7 @@ public class ReportServlet extends HttpServlet {
         sendResponse(response, HttpServletResponse.SC_OK, result);
     }
 
-    // Handle with hourly sales analysis report
+    // Handle hourly sales analysis report
     private void handleHourlyAnalysisReport(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
         List<Map<String, Object>> hourlyAnalysis = reportDAO.getHourlySalesAnalysis();
@@ -224,7 +224,7 @@ public class ReportServlet extends HttpServlet {
         sendResponse(response, HttpServletResponse.SC_OK, result);
     }
 
-    // Handle with member/nonmember comparison report
+    // Handle member/nonmember comparison report
     private void handleMemberComparisonReport(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
         Map<String, Object> comparison = reportDAO.getMemberVsNonMemberSales();
