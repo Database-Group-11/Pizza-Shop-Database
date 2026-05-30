@@ -343,6 +343,7 @@ This project was developed as a course assignment for the Database Systems cours
 
 ---
 
-**Course:** Database Systems  
+**Course:** Databases and Info Sys  
+**Course Code:** COMP2013J  
 **Semester:** Spring 2026  
-**Instructor:** [Dong Ruihai]
+**Lecturer:** Dong Ruihai
