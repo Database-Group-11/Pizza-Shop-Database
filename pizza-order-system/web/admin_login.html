@@ -39,7 +39,7 @@
 <body style="background: linear-gradient(135deg, #2c3e50, #1a1a2e);">
 <div class="admin-login-container">
     <div class="admin-card">
-        <h1>🔐 Admin System</h1>
+        <h1>Admin System</h1>
         <div class="subtitle">Pizza Takeout - Admin Login</div>
         <form id="adminLoginForm">
             <div class="form-group">
@@ -69,12 +69,19 @@
         const password = document.getElementById('password').value;
 
         try {
-            const response = await fetch(`${API_BASE}/admin/login`, {
+            const response = await fetch(`${API_BASE}/api/admin/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, password })
             });
-            const result = await response.json();
+            const text = await response.text();
+            console.log('Admin login response status:', response.status, 'body:', text);
+            let result;
+            try {
+                result = JSON.parse(text);
+            } catch (e) {
+                throw new Error('Server returned non-JSON response (status ' + response.status + '): ' + text.substring(0, 200));
+            }
             if (result.code === 200) {
                 localStorage.setItem('adminToken', JSON.stringify(result.data));
                 localStorage.setItem('adminInfo', JSON.stringify(result.data));
@@ -85,8 +92,9 @@
                 errorMsg.style.display = 'block';
             }
         } catch (error) {
+            console.error('Admin login error:', error);
             const errorMsg = document.getElementById('errorMsg');
-            errorMsg.textContent = 'Internet error, please try later';
+            errorMsg.textContent = 'Network error: ' + (error.message || 'please try later');
             errorMsg.style.display = 'block';
         }
     });

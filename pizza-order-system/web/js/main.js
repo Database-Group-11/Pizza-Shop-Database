@@ -139,12 +139,12 @@ function addToCart(pizza, selectedToppings, quantity) {
 // ========== Status mapping (doc format → display text) ==========
 function getStatusText(status) {
     const map = {
-        'pending': '⏳ Pending',
-        'paid': '✅ Paid',
-        'preparing': '🍳 Preparing',
-        'delivering': '🚚 Delivering',
-        'completed': '🎉 Completed',
-        'cancelled': '❌ Cancelled'
+        'pending': 'Pending',
+        'paid': 'Paid',
+        'preparing': 'Preparing',
+        'delivering': 'Delivering',
+        'completed': 'Completed',
+        'cancelled': 'Cancelled'
     };
     return map[status] || status;
 }

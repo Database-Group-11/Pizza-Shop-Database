@@ -15,6 +15,7 @@ public class Order {
     private Date createTime;
     private Date updateTime;
 
+    private String customerName;
     private List<OrderItem> items;
     private Payment payment;
     private Delivery delivery;
@@ -46,6 +47,9 @@ public class Order {
 
     public String getPaymentMethod() { return paymentMethod; }
     public void setPaymentMethod(String paymentMethod) { this.paymentMethod = paymentMethod; }
+
+    public String getCustomerName() { return customerName; }
+    public void setCustomerName(String customerName) { this.customerName = customerName; }
 
     public Date getCreateTime() { return createTime; }
     public void setCreateTime(Date createTime) { this.createTime = createTime; }

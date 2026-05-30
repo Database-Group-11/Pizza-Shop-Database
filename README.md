@@ -1,189 +1,348 @@
-# Pizza Ordering System - Setup Guide
+# Pizza Shop Online Ordering System
 
-## 1. Requirements
+A full-stack web application for pizza takeout ordering, built with Jakarta EE (Servlet) + MySQL + vanilla HTML/CSS/JavaScript. This project was developed as a course assignment for the Database Systems course.
 
-| Software | Version | Notes |
-|----------|---------|-------|
-| JDK | 21 | Required |
-| MySQL | 8.0+ | Database |
-| Tomcat | 10.1.x | Servlet container |
-| IntelliJ IDEA | 2023+ | IDE |
-| Git | Any | Version control |
+---
 
-## 2. Clone the Project
+## Table of Contents
 
-```bash
-git clone <your-repo-url>
-cd Pizza-Shop-Database
+1. [Project Overview](#1-project-overview)
+2. [Technology Stack](#2-technology-stack)
+3. [System Architecture](#3-system-architecture)
+4. [Database Design](#4-database-design)
+5. [Features](#5-features)
+6. [Project Structure](#6-project-structure)
+7. [Setup & Run](#7-setup--run)
+8. [API Reference](#8-api-reference)
+9. [Screenshots](#9-screenshots)
+
+---
+
+## 1. Project Overview
+
+The Pizza Shop Online Ordering System is a complete takeout platform with two subsystems:
+
+- **Customer-facing site** — Browse menu, customize pizzas with toppings, manage cart, place orders, track order status
+- **Admin panel** — Manage orders, update order status, assign delivery riders, monitor topping inventory, view sales reports
+
+The system demonstrates a classic three-tier architecture: **frontend (HTML/CSS/JS)** → **servlet layer (Java)** → **database (MySQL)**, with proper separation of concerns across DAO, DTO, Model, and Servlet layers.
+
+---
+
+## 2. Technology Stack
+
+| Layer | Technology |
+|-------|------------|
+| Frontend | HTML5, CSS3, Vanilla JavaScript (ES6+) |
+| Backend | Jakarta EE 10 (Servlet 6.0) |
+| Database | MySQL 8.0 |
+| Server | Apache Tomcat 10.1 |
+| Build Tool | Maven (pom.xml) |
+| Libraries | Gson 2.14, Org JSON, MySQL Connector/J 8.0 |
+| Version Control | Git |
+
+---
+
+## 3. System Architecture
+
+```
+Browser (HTML/CSS/JS)
+    │
+    ▼
+Tomcat 10.1 ───────────────────────────────────┐
+    │                                            │
+    ▼                                            │
+Jakarta Servlet Layer                           │
+├── CorsFilter         (global CORS)            │
+├── CustomerServlet    (/api/customer/*)        │
+├── PizzaServlet       (/api/pizzas/*)          │
+├── ToppingServlet     (/api/toppings/*)        │
+├── OrderServlet       (/api/orders/*)          │
+├── PaymentServlet     (/api/payments)           │
+├── DeliveryServlet    (/api/deliveries/*)       │
+├── ReportServlet      (/api/reports/*)          │
+├── AdminServlet       (/api/admin/*)            │
+└── CartServlet        (/api/cart/*)             │
+    │                                            │
+    ▼                                            │
+Data Access Layer (DAO)                         │
+├── CustomerDAO, PizzaDAO, ToppingDAO           │
+├── OrderDAO, OrderItemDAO                      │
+├── PaymentDAO, DeliveryDAO, ReportDAO          │
+    │                                            │
+    ▼                                            │
+MySQL 8.0 (pizza_shop database)                 │
+├── 8 tables, 4 views, indexes                  │
+└── Test data: 3 customers, 7 pizzas, 7 toppings│
 ```
 
-## 3. Database Setup
+### Design Patterns
 
-### 3.1 Start MySQL
+- **MVC pattern**: Servlet (Controller) → DAO (Model) → JSP/HTML (View)
+- **DTO pattern**: Request/Response objects decouple API contracts from entities
+- **Singleton via WebServlet**: Each servlet is a single-instance controller
+- **Front Controller**: Path-based routing within each servlet (`/api/orders/*`)
 
-```bash
-# Windows
-net start MySQL
+---
 
-# Mac/Linux
-mysql.server start
+## 4. Database Design
+
+### ER Diagram
+
+The database `pizza_shop` contains 8 core tables:
+
+```
+customers ──1:N── orders ──1:N── order_items ──N:1── pizzas
+                         │                         │
+                        1:1                       N:M (via order_toppings)
+                         │                         │
+                      payments                 toppings
+                         │
+                        1:1
+                         │
+                      deliveries
 ```
 
-### 3.2 Create Database and Import Data
+### Table Summary
 
-```bash
-# Login to MySQL
-mysql -u root -p
+| Table | Description | Key Columns |
+|-------|-------------|-------------|
+| `customers` | Registered users | customer_id, name, phone, password, address |
+| `pizzas` | Pizza menu | pizza_id, name, base_price, category, stock_quantity |
+| `toppings` | Available toppings | topping_id, name, price, stock_quantity |
+| `orders` | Customer orders | order_id, order_no, total_amount, status, customer_id |
+| `order_items` | Items within an order | item_id, order_id, pizza_id, quantity, unit_price |
+| `order_toppings` | Toppings on each item | item_id, topping_id, quantity |
+| `payments` | Payment records | payment_id, order_id, amount, status, transaction_id |
+| `deliveries` | Delivery tracking | delivery_id, order_id, rider_name, status |
 
-# Create database
-CREATE DATABASE pizza_shop DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+### Constraints & Integrity
 
-# Use database
-USE pizza_shop;
+- Foreign keys with `ON DELETE CASCADE` on order-related tables
+- `UNIQUE` constraints on `customers.phone`, `orders.order_no`, `payments.order_id`, `deliveries.order_id`
+- `DECIMAL(10,2)` for all monetary values to avoid floating-point precision issues
+- Default status values: orders → `pending`, deliveries → `preparing`
 
-# Execute SQL files (update path to your project)
-SOURCE D:/your-project-path/pizza-order-system/sql/schema.sql;
-SOURCE D:/your-project-path/pizza-order-system/sql/test_data.sql;
-SOURCE D:/your-project-path/pizza-order-system/sql/views.sql;
-SOURCE D:/your-project-path/pizza-order-system/sql/indexes.sql;
-```
+---
 
-### 3.3 Verify Database
+## 5. Features
 
-```sql
-USE pizza_shop;
-SHOW TABLES;                    -- Should show 8 tables
-SELECT COUNT(*) FROM customers; -- 3
-SELECT COUNT(*) FROM pizzas;     -- 7
-SELECT COUNT(*) FROM toppings;   -- 7
-```
+### Customer System
 
-## 4. Project Configuration
+| Feature | Description |
+|---------|-------------|
+| User Registration | Phone + password registration with client-side validation |
+| User Login | Session-based authentication (HttpSession) |
+| Browse Menu | Category filtering (Classic, Specialty, Meat, Seafood, Vegetarian) |
+| Customize Pizza | Add/remove toppings with real-time price calculation |
+| Shopping Cart | Add, update quantity, remove items (localStorage) |
+| Checkout | Delivery address, payment method selection |
+| Place Order | Creates order + order items in a DB transaction |
+| Order Tracking | Real-time status with progress bar (5s polling) |
+| Pay Order | Payment processing via Credit Card/Alipay/WeChat |
+| Order History | Filter by status (All/Pending/Paid/Completed/Cancelled) |
+| Re-order | Clone past order items into cart |
 
-### 4.1 Configure Database Connection
+### Admin System
 
-Copy the template file:
+| Feature | Description |
+|---------|-------------|
+| Admin Login | Username/password authentication |
+| Order Management | View all orders with customer names, filter stats |
+| Status Update | Change order status (Pending → Paid → Preparing → Delivering → Completed → Cancelled) |
+| Rider Assignment | Select from 5 predefined riders, auto- create delivery record |
+| Topping Inventory | CRUD operations, stock update, low-stock alerts |
+| Sales Reports | Total revenue, order count, average order value |
+| Top Pizzas | Ranked list of best-selling pizzas |
+| Sales Trend | Bar chart of last 7 days order volume |
 
-```bash
-cp src/util/DBUtilTemplate.java src/util/DBUtil.java
-```
+---
 
-Edit `DBUtil.java`:
-
-```java
-private static final String URL = "jdbc:mysql://localhost:3306/pizza_shop?useSSL=false&serverTimezone=Asia/Shanghai&characterEncoding=utf-8&allowPublicKeyRetrieval=true";
-private static final String USERNAME = "root";
-private static final String PASSWORD = "your_mysql_password";  // ← Change this
-```
-
-### 4.2 Configure Tomcat
-
-1. **Download Tomcat 10.1.x**: https://tomcat.apache.org/download-10.cgi
-
-2. **Configure in IDEA**:
-    - `Run` → `Edit Configurations` → `+` → `Tomcat Server` → `Local`
-    - `Configure...` → Select Tomcat installation directory
-    - `Deployment` tab → `+` → `Artifact` → Select `myproject:war exploded`
-    - Set `Application Context` to `/`
-    - Click `OK`
-
-### 4.3 Configure Artifact Output Layout
-
-If API returns empty data, check Artifact configuration:
-
-1. `File` → `Project Structure` → `Artifacts`
-2. Select `myproject:war exploded`
-3. In `Output Layout`:
-    - Remove `'myproject' module: 'Web' facet resources` (if exists)
-    - Click `+` → `Directory Content` → Select `pizza-order-system/web` folder
-4. Click `Apply` → `OK`
-
-## 5. Run the Project
-
-### 5.1 Start Tomcat
-
-Click the green triangle ▶ in IDEA
-
-### 5.2 Test APIs
-
-| API | URL | Expected Result |
-|-----|-----|-----------------|
-| Pizzas | `http://localhost:8080/api/pizzas` | Returns 5 pizzas |
-| Toppings | `http://localhost:8080/api/toppings` | Returns 7 toppings |
-
-## 6. Troubleshooting
-
-### 6.1 Port Already in Use
-
-Change Tomcat port: `Run` → `Edit Configurations` → Tomcat → `HTTP port` to `8081`
-
-### 6.2 Database Connection Failed
-
-- Check if MySQL is running
-- Verify password in `DBUtil.java`
-- Check port number in URL (3306 or 3307)
-
-### 6.3 API Returns Empty Data
-
-- Check `available` column in `pizzas` table is `1`
-- Verify Artifact output layout includes `web` folder
-- Rebuild: `Build` → `Build Artifacts` → `Rebuild`
-
-### 6.4 Console Shows Chinese Garbled Text
-
-Edit `conf/logging.properties`:
-```
-java.util.logging.ConsoleHandler.encoding = GBK
-```
-
-## 7. Project Structure
+## 6. Project Structure
 
 ```
 Pizza-Shop-Database/
-├── pizza-order-system/
-│   ├── src/                    # Java source code
-│   │   ├── dao/               # Data access layer
-│   │   ├── dto/               # Data transfer objects
-│   │   ├── model/             # Entity classes
-│   │   ├── servlet/           # Controllers
-│   │   └── util/              # Utilities
-│   ├── sql/                   # SQL files
-│   │   ├── schema.sql         # Table structure
-│   │   ├── test_data.sql      # Test data
-│   │   ├── views.sql          # Views
-│   │   └── indexes.sql        # Indexes
-│   ├── web/                   # Frontend files
-│   └── lib/                   # JAR dependencies
-├── .gitignore
-└── README.md
+├── pom.xml                        # Maven build configuration
+├── README.md
+├── doc/
+│   └── er_diagram.drawio.html     # ER diagram
+└── pizza-order-system/
+    ├── src/main/java/edu/group11/
+    │   ├── dao/                   # Data access objects (8 files)
+    │   │   ├── CustomerDAO.java
+    │   │   ├── PizzaDAO.java
+    │   │   ├── ToppingDAO.java
+    │   │   ├── OrderDAO.java
+    │   │   ├── OrderItemDAO.java
+    │   │   ├── PaymentDAO.java
+    │   │   ├── DeliveryDAO.java
+    │   │   └── ReportDAO.java
+    │   ├── dto/request/           # Request DTOs (6 files)
+    │   │   ├── CustomerLoginRequest.java
+    │   │   ├── CustomerRegisterRequest.java
+    │   │   ├── AdminLoginRequest.java
+    │   │   ├── OrderCreateRequest.java
+    │   │   ├── OrderItemRequest.java
+    │   │   ├── PaymentRequest.java
+    │   │   ├── ToppingCreateRequest.java
+    │   │   └── ToppingUpdateRequest.java
+    │   ├── dto/response/          # Response DTOs (11 files)
+    │   ├── model/                 # Entity classes (6 files)
+    │   │   ├── Customer.java
+    │   │   ├── Pizza.java
+    │   │   ├── Topping.java
+    │   │   ├── Order.java
+    │   │   ├── OrderItem.java
+    │   │   ├── Payment.java
+    │   │   └── Delivery.java
+    │   ├── servlet/               # Servlet controllers (9 files)
+    │   │   ├── CorsFilter.java    # Global CORS filter
+    │   │   ├── CustomerServlet.java
+    │   │   ├── PizzaServlet.java
+    │   │   ├── ToppingServlet.java
+    │   │   ├── OrderServlet.java
+    │   │   ├── PaymentServlet.java
+    │   │   ├── DeliveryServlet.java
+    │   │   ├── ReportServlet.java
+    │   │   ├── AdminServlet.java
+    │   │   └── CartServlet.java
+    │   └── util/
+    │       ├── DBUtil.java        # Database connection (git-ignored)
+    │       └── DBUtilTemplate.java # Connection template
+    ├── sql/                       # Database files
+    │   ├── schema.sql             # Table definitions
+    │   ├── test_data.sql          # Sample data
+    │   ├── views.sql              # Database views
+    │   └── indexes.sql            # Performance indexes
+    └── web/                       # Frontend files
+        ├── css/style.css
+        ├── js/main.js             # Shared JS (API, auth, cart, utils)
+        ├── login.html             # Customer login
+        ├── register.html          # Customer registration
+        ├── menu.html              # Pizza menu browser
+        ├── pizza_detail.html      # Pizza customization
+        ├── cart.html              # Shopping cart
+        ├── checkout.html          # Order checkout
+        ├── order_status.html      # Order tracking
+        ├── order_history.html     # Order history
+        ├── admin_login.html       # Admin login
+        ├── admin_orders.html      # Admin order management
+        ├── admin_inventory.html   # Admin topping inventory
+        └── admin_reports.html     # Admin sales reports
 ```
 
-## 8. API Endpoints
+---
 
-| Module | Method | Path | Description |
-|--------|--------|------|-------------|
-| User | POST | `/api/customer/register` | Register |
-| User | POST | `/api/customer/login` | Login |
-| Pizza | GET | `/api/pizzas` | Get pizza list |
-| Topping | GET | `/api/toppings` | Get topping list |
-| Order | POST | `/api/orders` | Create order |
-| Order | GET | `/api/orders/customer` | Get user orders |
-| Order | GET | `/api/orders/{id}` | Get order details |
-| Payment | POST | `/api/payments` | Process payment |
-| Delivery | GET | `/api/deliveries/order/{id}` | Get delivery info |
-| Admin | POST | `/api/admin/login` | Admin login |
-| Admin | GET | `/api/admin/orders` | Get all orders |
-| Admin | PUT | `/api/admin/orders/{id}/status` | Update order status |
-| Admin | GET | `/api/admin/reports` | Get statistics |
+## 7. Setup & Run
 
-## 9. Team Member Checklist
+### Prerequisites
 
-Each team member must complete:
+- JDK 21, MySQL 8.0+, Apache Tomcat 10.1, IntelliJ IDEA 2023+
 
-- [ ] Install JDK 21, MySQL, Tomcat 10.1
-- [ ] Execute SQL files to initialize database
-- [ ] Copy `DBUtilTemplate.java` to `DBUtil.java` and set password
-- [ ] Configure Tomcat in IDEA
-- [ ] Run project and test `/api/pizzas` endpoint
+### Step 1 — Database
 
-**After setup, visit:** `http://localhost:8080/api/pizzas`
+```sql
+CREATE DATABASE pizza_shop DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE pizza_shop;
+
+-- Replace <project-path> with your actual project location, e.g. D:/study-resources/Pizza-Shop-Database
+SOURCE <project-path>/pizza-order-system/sql/schema.sql;
+SOURCE <project-path>/pizza-order-system/sql/test_data.sql;
+SOURCE <project-path>/pizza-order-system/sql/views.sql;
+SOURCE <project-path>/pizza-order-system/sql/indexes.sql;
+```
+
+### Step 2 — Configure DB Connection
+
+Copy `pizza-order-system/src/main/java/edu/group11/util/DBUtilTemplate.java` to `DBUtil.java` and set your MySQL password:
+
+```java
+private static final String PASSWORD = "your_mysql_password";
+```
+
+### Step 3 — IntelliJ Configuration
+
+1. Open the project root `Pizza-Shop-Database/` in IntelliJ
+2. `Run` → `Edit Configurations` → `+` → `Tomcat Server` → `Local`
+3. Set Tomcat home directory, HTTP port `8080`
+4. `Deployment` → `+` → `Artifact` → `myproject:war exploded`
+5. Application context: `/`
+
+### Step 4 — Run
+
+Click the green ▶ button. The application will be available at `http://localhost:8080/`.
+
+### Test Accounts
+
+| Role | Username/Phone | Password |
+|------|---------------|----------|
+| Admin | `admin` | `admin123` |
+| Customer | `13800138000` | `123456` |
+
+---
+
+## 8. API Reference
+
+### Customer Endpoints
+
+| Method | Path | Description |
+|--------|------|-------------|
+| POST | `/api/customer/register` | Register new user |
+| POST | `/api/customer/login` | Login with phone + password |
+
+### Menu Endpoints
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/pizzas` | List all pizzas |
+| GET | `/api/pizzas/available` | List available pizzas |
+| GET | `/api/pizzas/category/{name}` | Filter by category |
+| GET | `/api/toppings` | List all toppings |
+| GET | `/api/toppings/available` | List available toppings |
+
+### Order Endpoints
+
+| Method | Path | Description |
+|--------|------|-------------|
+| POST | `/api/orders` | Create new order |
+| GET | `/api/orders/customer?customer_id={id}` | Get user's orders |
+| GET | `/api/orders/{id}` | Get order detail |
+| POST | `/api/payments` | Process payment |
+| GET | `/api/deliveries/order?orderId={id}` | Get delivery info |
+
+### Admin Endpoints
+
+| Method | Path | Description |
+|--------|------|-------------|
+| POST | `/api/admin/login` | Admin login |
+| GET | `/api/admin/orders` | List all orders |
+| PUT | `/api/admin/orders/{id}/status` | Update order status |
+| GET | `/api/toppings` | List toppings (CRUD via GET/POST/PUT/DELETE) |
+
+### Report Endpoints
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/reports/sales/today` | Today's sales stats |
+| GET | `/api/reports/top-pizzas?limit=10` | Top-selling pizzas |
+| GET | `/api/reports/daily-trend` | Last 7 days order trend |
+
+---
+
+## 9. Team
+
+This project was developed as a course assignment for the Database Systems course.
+
+| Name         | Student ID | Contributions     |
+|--------------|------------|-------------------|
+| Dong Qiutong | 24107752   | Database, backend |
+| Zhu Jingyi   | 24107747   | Frontend          |
+| Qiu Siqi     | 27107750   | Backend           |
+| Liu Yiming   | 24107755   | Backend           |
+| Gao Debo     | 24107756   | Testing           |
+
+---
+
+**Course:** Database Systems  
+**Semester:** Spring 2026  
+**Instructor:** [Dong Ruihai]

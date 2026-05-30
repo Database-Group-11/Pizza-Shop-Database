@@ -64,6 +64,28 @@ public class OrderDAO {
         }
     }
 
+    // Find all orders
+    public List<Order> findAll() {
+        List<Order> orders = new ArrayList<>();
+        String sql = "SELECT o.*, c.name as customer_name FROM orders o " +
+                     "LEFT JOIN customers c ON o.customer_id = c.customer_id " +
+                     "ORDER BY o.order_time DESC";
+
+        try (Connection conn = DBUtil.getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+
+            while (rs.next()) {
+                Order order = extractOrderFromResultSet(rs);
+                order.setItems(orderItemDAO.findByOrderId(order.getOrderId()));
+                orders.add(order);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return orders;
+    }
+
     // Find order list by customer ID
     public List<Order> findByCustomerId(int customerId) {
         List<Order> orders = new ArrayList<>();
@@ -132,6 +154,7 @@ public class OrderDAO {
         order.setStatus(rs.getString("status"));
         order.setDeliveryAddress(rs.getString("delivery_address"));
         order.setPaymentMethod(rs.getString("payment_method"));
+        try { order.setCustomerName(rs.getString("customer_name")); } catch (SQLException e) { }
         order.setCreateTime(rs.getTimestamp("create_time"));
         order.setUpdateTime(rs.getTimestamp("update_time"));
         return order;

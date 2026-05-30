@@ -10,32 +10,14 @@ import java.util.Map;
 
 public class DeliveryDAO {
 
-    // Create delivery history
+    // Create delivery record
     public int createDelivery(JSONObject jsonData) {
-        String sql = "INSERT INTO deliveries (order_id, delivery_address, contact_phone, " +
-                "delivery_status, estimated_delivery_time, driver_name, driver_phone, " +
-                "delivery_fee, tracking_number, delivery_notes, created_at) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
+        String sql = "INSERT INTO deliveries (order_id, status) VALUES (?, 'pending')";
 
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             pstmt.setInt(1, jsonData.getInt("orderId"));
-            pstmt.setString(2, jsonData.getString("deliveryAddress"));
-            pstmt.setString(3, jsonData.getString("contactPhone"));
-            pstmt.setString(4, jsonData.optString("deliveryStatus", "pending"));
-
-            if (jsonData.has("estimatedDeliveryTime")) {
-                pstmt.setTimestamp(5, Timestamp.valueOf(jsonData.getString("estimatedDeliveryTime")));
-            } else {
-                pstmt.setNull(5, Types.TIMESTAMP);
-            }
-
-            pstmt.setString(6, jsonData.optString("driverName", null));
-            pstmt.setString(7, jsonData.optString("driverPhone", null));
-            pstmt.setDouble(8, jsonData.optDouble("deliveryFee", 0.0));
-            pstmt.setString(9, jsonData.optString("trackingNumber", null));
-            pstmt.setString(10, jsonData.optString("deliveryNotes", null));
 
             int affectedRows = pstmt.executeUpdate();
 
@@ -54,10 +36,9 @@ public class DeliveryDAO {
 
     // Get delivery by order ID
     public Map<String, Object> getDeliveryByOrderId(int orderId) {
-        String sql = "SELECT delivery_id, order_id, delivery_address, contact_phone, " +
-                "delivery_status, estimated_delivery_time, actual_delivery_time, " +
-                "driver_name, driver_phone, delivery_fee, tracking_number, " +
-                "delivery_notes, created_at, updated_at " +
+        String sql = "SELECT delivery_id, order_id, rider_name, rider_phone, " +
+                "status, estimated_delivery_time, start_time, arrive_time, " +
+                "create_time, update_time " +
                 "FROM deliveries WHERE order_id = ?";
 
         try (Connection conn = DBUtil.getConnection();
@@ -78,10 +59,9 @@ public class DeliveryDAO {
 
     // Get delivery by delivery ID
     public Map<String, Object> getDeliveryById(int deliveryId) {
-        String sql = "SELECT delivery_id, order_id, delivery_address, contact_phone, " +
-                "delivery_status, estimated_delivery_time, actual_delivery_time, " +
-                "driver_name, driver_phone, delivery_fee, tracking_number, " +
-                "delivery_notes, created_at, updated_at " +
+        String sql = "SELECT delivery_id, order_id, rider_name, rider_phone, " +
+                "status, estimated_delivery_time, start_time, arrive_time, " +
+                "create_time, update_time " +
                 "FROM deliveries WHERE delivery_id = ?";
 
         try (Connection conn = DBUtil.getConnection();
@@ -103,11 +83,10 @@ public class DeliveryDAO {
     // Get all active deliveries
     public List<Map<String, Object>> getActiveDeliveries() {
         List<Map<String, Object>> deliveries = new ArrayList<>();
-        String sql = "SELECT delivery_id, order_id, delivery_address, contact_phone, " +
-                "delivery_status, estimated_delivery_time, actual_delivery_time, " +
-                "driver_name, driver_phone, delivery_fee, tracking_number, " +
-                "delivery_notes, created_at, updated_at " +
-                "FROM deliveries WHERE delivery_status IN ('pending', 'preparing', 'out_for_delivery') " +
+        String sql = "SELECT delivery_id, order_id, rider_name, rider_phone, " +
+                "status, estimated_delivery_time, start_time, arrive_time, " +
+                "create_time, update_time " +
+                "FROM deliveries WHERE status IN ('pending', 'preparing', 'out_for_delivery') " +
                 "ORDER BY estimated_delivery_time ASC";
 
         try (Connection conn = DBUtil.getConnection();
@@ -123,15 +102,14 @@ public class DeliveryDAO {
         return deliveries;
     }
 
-    // Get specific delivery by driver
+    // Get deliveries by driver name
     public List<Map<String, Object>> getDeliveriesByDriver(String driverName) {
         List<Map<String, Object>> deliveries = new ArrayList<>();
-        String sql = "SELECT delivery_id, order_id, delivery_address, contact_phone, " +
-                "delivery_status, estimated_delivery_time, actual_delivery_time, " +
-                "driver_name, driver_phone, delivery_fee, tracking_number, " +
-                "delivery_notes, created_at, updated_at " +
-                "FROM deliveries WHERE driver_name = ? " +
-                "AND delivery_status IN ('preparing', 'out_for_delivery') " +
+        String sql = "SELECT delivery_id, order_id, rider_name, rider_phone, " +
+                "status, estimated_delivery_time, start_time, arrive_time, " +
+                "create_time, update_time " +
+                "FROM deliveries WHERE rider_name = ? " +
+                "AND status IN ('preparing', 'out_for_delivery') " +
                 "ORDER BY estimated_delivery_time ASC";
 
         try (Connection conn = DBUtil.getConnection();
@@ -152,7 +130,7 @@ public class DeliveryDAO {
 
     // Update delivery status
     public boolean updateDeliveryStatus(int deliveryId, String status) {
-        String sql = "UPDATE deliveries SET delivery_status = ?, updated_at = NOW() WHERE delivery_id = ?";
+        String sql = "UPDATE deliveries SET status = ?, update_time = NOW() WHERE delivery_id = ?";
 
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -167,10 +145,10 @@ public class DeliveryDAO {
         return false;
     }
 
-    // Update delivery status and record the delivery time
+    // Complete delivery
     public boolean completeDelivery(int deliveryId) {
-        String sql = "UPDATE deliveries SET delivery_status = 'delivered', " +
-                "actual_delivery_time = NOW(), updated_at = NOW() WHERE delivery_id = ?";
+        String sql = "UPDATE deliveries SET status = 'delivered', " +
+                "arrive_time = NOW(), update_time = NOW() WHERE delivery_id = ?";
 
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -186,7 +164,7 @@ public class DeliveryDAO {
 
     // Cancel delivery
     public boolean cancelDelivery(int deliveryId) {
-        String sql = "UPDATE deliveries SET delivery_status = 'cancelled', updated_at = NOW() WHERE delivery_id = ?";
+        String sql = "UPDATE deliveries SET status = 'cancelled', update_time = NOW() WHERE delivery_id = ?";
 
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -200,10 +178,10 @@ public class DeliveryDAO {
         return false;
     }
 
-    // Assign driver
+    // Assign driver to delivery
     public boolean assignDriver(int deliveryId, String driverName, String driverPhone) {
-        String sql = "UPDATE deliveries SET driver_name = ?, driver_phone = ?, " +
-                "delivery_status = 'preparing', updated_at = NOW() WHERE delivery_id = ?";
+        String sql = "UPDATE deliveries SET rider_name = ?, rider_phone = ?, " +
+                "status = 'preparing', update_time = NOW() WHERE delivery_id = ?";
 
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -219,9 +197,10 @@ public class DeliveryDAO {
         return false;
     }
 
-    // Mark as started
+    // Mark delivery as started
     public boolean startDelivery(int deliveryId) {
-        String sql = "UPDATE deliveries SET delivery_status = 'out_for_delivery', updated_at = NOW() WHERE delivery_id = ?";
+        String sql = "UPDATE deliveries SET status = 'delivering', start_time = NOW(), " +
+                "update_time = NOW() WHERE delivery_id = ?";
 
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -235,51 +214,13 @@ public class DeliveryDAO {
         return false;
     }
 
-    // Update tracking number
-    public boolean updateTrackingNumber(int deliveryId, String trackingNumber) {
-        String sql = "UPDATE deliveries SET tracking_number = ?, updated_at = NOW() WHERE delivery_id = ?";
-
-        try (Connection conn = DBUtil.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setString(1, trackingNumber);
-            pstmt.setInt(2, deliveryId);
-
-            return pstmt.executeUpdate() > 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
-
-    // Add notes of delivery
-    public boolean addDeliveryNotes(int deliveryId, String notes) {
-        String sql = "UPDATE deliveries SET delivery_notes = CONCAT(IFNULL(delivery_notes, ''), ?, '\\n'), " +
-                "updated_at = NOW() WHERE delivery_id = ?";
-
-        try (Connection conn = DBUtil.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            String timestamp = new Timestamp(System.currentTimeMillis()).toString();
-            String noteWithTime = "[" + timestamp + "] " + notes;
-            pstmt.setString(1, noteWithTime);
-            pstmt.setInt(2, deliveryId);
-
-            return pstmt.executeUpdate() > 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
-
-    // Get order due deliveries (if the deliveries are not completed on time)
+    // Get overdue deliveries
     public List<Map<String, Object>> getOverdueDeliveries() {
         List<Map<String, Object>> deliveries = new ArrayList<>();
-        String sql = "SELECT delivery_id, order_id, delivery_address, contact_phone, " +
-                "delivery_status, estimated_delivery_time, actual_delivery_time, " +
-                "driver_name, driver_phone, delivery_fee, tracking_number, " +
-                "delivery_notes, created_at, updated_at " +
-                "FROM deliveries WHERE delivery_status IN ('preparing', 'out_for_delivery') " +
+        String sql = "SELECT delivery_id, order_id, rider_name, rider_phone, " +
+                "status, estimated_delivery_time, start_time, arrive_time, " +
+                "create_time, update_time " +
+                "FROM deliveries WHERE status IN ('preparing', 'out_for_delivery') " +
                 "AND estimated_delivery_time < NOW() " +
                 "ORDER BY estimated_delivery_time ASC";
 
@@ -301,11 +242,11 @@ public class DeliveryDAO {
         Map<String, Object> stats = new HashMap<>();
         String sql = "SELECT " +
                 "COUNT(*) as total_deliveries, " +
-                "SUM(CASE WHEN delivery_status = 'delivered' THEN 1 ELSE 0 END) as completed, " +
-                "SUM(CASE WHEN delivery_status = 'cancelled' THEN 1 ELSE 0 END) as cancelled, " +
-                "SUM(CASE WHEN delivery_status IN ('pending', 'preparing', 'out_for_delivery') THEN 1 ELSE 0 END) as active, " +
-                "AVG(TIMESTAMPDIFF(MINUTE, created_at, actual_delivery_time)) as avg_delivery_time " +
-                "FROM deliveries WHERE DATE(created_at) = CURDATE()";
+                "SUM(CASE WHEN status = 'delivered' THEN 1 ELSE 0 END) as completed, " +
+                "SUM(CASE WHEN status = 'cancelled' THEN 1 ELSE 0 END) as cancelled, " +
+                "SUM(CASE WHEN status IN ('pending', 'preparing', 'out_for_delivery') THEN 1 ELSE 0 END) as active, " +
+                "AVG(TIMESTAMPDIFF(MINUTE, create_time, arrive_time)) as avg_delivery_time " +
+                "FROM deliveries WHERE DATE(create_time) = CURDATE()";
 
         try (Connection conn = DBUtil.getConnection();
              Statement stmt = conn.createStatement();
@@ -325,37 +266,36 @@ public class DeliveryDAO {
         return stats;
     }
 
-    // Get delivery data as a Map from ResultSel
+    // Extract delivery data from ResultSet
     private Map<String, Object> extractDeliveryFromResultSet(ResultSet rs) throws SQLException {
         Map<String, Object> delivery = new HashMap<>();
         delivery.put("deliveryId", rs.getInt("delivery_id"));
         delivery.put("orderId", rs.getInt("order_id"));
-        delivery.put("deliveryAddress", rs.getString("delivery_address"));
-        delivery.put("contactPhone", rs.getString("contact_phone"));
-        delivery.put("deliveryStatus", rs.getString("delivery_status"));
+        delivery.put("riderName", rs.getString("rider_name"));
+        delivery.put("riderPhone", rs.getString("rider_phone"));
+        delivery.put("status", rs.getString("status"));
 
         Timestamp estimatedTime = rs.getTimestamp("estimated_delivery_time");
         if (estimatedTime != null) {
             delivery.put("estimatedDeliveryTime", estimatedTime.toString());
         }
 
-        Timestamp actualTime = rs.getTimestamp("actual_delivery_time");
-        if (actualTime != null) {
-            delivery.put("actualDeliveryTime", actualTime.toString());
+        Timestamp startTime = rs.getTimestamp("start_time");
+        if (startTime != null) {
+            delivery.put("startTime", startTime.toString());
         }
 
-        delivery.put("driverName", rs.getString("driver_name"));
-        delivery.put("driverPhone", rs.getString("driver_phone"));
-        delivery.put("deliveryFee", rs.getDouble("delivery_fee"));
-        delivery.put("trackingNumber", rs.getString("tracking_number"));
-        delivery.put("deliveryNotes", rs.getString("delivery_notes"));
+        Timestamp arriveTime = rs.getTimestamp("arrive_time");
+        if (arriveTime != null) {
+            delivery.put("arriveTime", arriveTime.toString());
+        }
 
-        Timestamp createdAt = rs.getTimestamp("created_at");
+        Timestamp createdAt = rs.getTimestamp("create_time");
         if (createdAt != null) {
             delivery.put("createdAt", createdAt.toString());
         }
 
-        Timestamp updatedAt = rs.getTimestamp("updated_at");
+        Timestamp updatedAt = rs.getTimestamp("update_time");
         if (updatedAt != null) {
             delivery.put("updatedAt", updatedAt.toString());
         }

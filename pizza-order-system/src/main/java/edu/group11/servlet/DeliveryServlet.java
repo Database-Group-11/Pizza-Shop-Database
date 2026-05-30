@@ -165,16 +165,6 @@ public class DeliveryServlet extends HttpServlet {
                             handleCancelDelivery(jsonData, response);
                             break;
 
-                        case "tracking":
-                            // POST /api/deliveries/tracking - update tracking number
-                            handleUpdateTracking(jsonData, response);
-                            break;
-
-                        case "notes":
-                            // POST /api/deliveries/notes - add notes
-                            handleAddNotes(jsonData, response);
-                            break;
-
                         default:
                             sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Unknown operation");
                             break;
@@ -363,50 +353,6 @@ public class DeliveryServlet extends HttpServlet {
             sendResponse(response, HttpServletResponse.SC_OK, result);
         } else {
             sendError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to cancel delivery");
-        }
-    }
-
-    // Handle updating tracking number
-    private void handleUpdateTracking(JSONObject jsonData, HttpServletResponse response)
-            throws IOException {
-        if (!jsonData.has("deliveryId") || !jsonData.has("trackingNumber")) {
-            sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Lacks necessary parameters");
-            return;
-        }
-
-        int deliveryId = jsonData.getInt("deliveryId");
-        String trackingNumber = jsonData.getString("trackingNumber");
-
-        boolean success = deliveryDAO.updateTrackingNumber(deliveryId, trackingNumber);
-        if (success) {
-            JSONObject result = new JSONObject();
-            result.put("success", true);
-            result.put("message", "Successfully updated tracking number");
-            sendResponse(response, HttpServletResponse.SC_OK, result);
-        } else {
-            sendError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to update tracking number");
-        }
-    }
-
-    // Handle adding notes
-    private void handleAddNotes(JSONObject jsonData, HttpServletResponse response)
-            throws IOException {
-        if (!jsonData.has("deliveryId") || !jsonData.has("notes")) {
-            sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Lacks necessary parameters");
-            return;
-        }
-
-        int deliveryId = jsonData.getInt("deliveryId");
-        String notes = jsonData.getString("notes");
-
-        boolean success = deliveryDAO.addDeliveryNotes(deliveryId, notes);
-        if (success) {
-            JSONObject result = new JSONObject();
-            result.put("success", true);
-            result.put("message", "Successfully added notes");
-            sendResponse(response, HttpServletResponse.SC_OK, result);
-        } else {
-            sendError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to add notes");
         }
     }
 

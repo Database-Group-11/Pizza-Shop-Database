@@ -132,12 +132,12 @@
 </head>
 <body>
 <div class="admin-sidebar">
-    <h3>🍕 Pizza Admin</h3>
-    <a href=" ">📋 Order Management</a>
-    <a href="admin_inventory.html">📦 Topping Inventory</a>
-    <a href="admin_reports.html" class="active">📊 Reports</a>
-    <a href="menu.html" style="margin-top: 50px;">🏠 Back to Store</a>
-    <a href="#" id="adminLogoutBtn">🚪 Logout</a>
+    <h3>Pizza Admin</h3>
+    <a href="admin_orders.html">Order Management</a>
+    <a href="admin_inventory.html">Topping Inventory</a>
+    <a href="admin_reports.html" class="active">Reports</a>
+    <a href="menu.html" style="margin-top: 50px;">Back to Store</a>
+    <a href="#" id="adminLogoutBtn">Logout</a>
 </div>
 
 <div class="admin-content">
@@ -161,21 +161,21 @@
     </div>
 
     <div class="report-section">
-        <h3>🏆 Top Selling Pizzas TOP 3</h3>
+        <h3>Top Selling Pizzas TOP 3</h3>
         <ul class="sales-list" id="topPizzas">
             <li>Loading...</li>
         </ul>
     </div>
 
     <div class="report-section">
-        <h3>📈 Last 7 Days Order Trend</h3>
+        <h3>Last 7 Days Order Trend</h3>
         <div id="trendChart" class="trend-chart">
             <div style="text-align:center; width:100%;">Loading...</div>
         </div>
     </div>
 
     <div class="report-section">
-        <h3>🍕 Pizza Sales Statistics</h3>
+        <h3>Pizza Sales Statistics</h3>
         <ul class="sales-list" id="allPizzaSales">
             <li>Loading...</li>
         </ul>
@@ -196,45 +196,60 @@
 
     async function loadReport() {
         try {
-            const response = await fetch(`${API_BASE}/admin/reports`);
-            const result = await response.json();
-            console.log('Report data:', result);
+            // Fetch sales stats, top pizzas, and daily trend in parallel
+            const [salesRes, topRes, trendRes] = await Promise.all([
+                fetch(`${API_BASE}/api/reports/sales/today`),
+                fetch(`${API_BASE}/api/reports/top-pizzas?limit=10`),
+                fetch(`${API_BASE}/api/reports/daily-trend`)
+            ]);
 
-            if (result.code === 200) {
-                const data = result.data;
-                document.getElementById('totalSales').innerText = data.totalRevenue || 0;
-                document.getElementById('totalOrderCount').innerText = data.totalOrders || 0;
-                document.getElementById('avgOrderAmount').innerText = data.avgOrderValue || 0;
-
-                const topPizzas = data.topPizzas || [];
-                if (topPizzas.length > 0) {
-                    const topHtml = topPizzas.slice(0, 3).map((pizza, idx) =>
-                        `<li class="rank-${idx+1}">
-                                <span>${idx+1}. ${pizza.pizzaName || pizza.name}</span>
-                                <span>Sales: ${pizza.totalQuantity || pizza.quantity}</span>
-                            </li>`
-                    ).join('');
-                    document.getElementById('topPizzas').innerHTML = topHtml;
-
-                    const allHtml = topPizzas.map(pizza =>
-                        `<li>
-                                <span>${pizza.pizzaName || pizza.name}</span>
-                                <span>Sales: ${pizza.totalQuantity || pizza.quantity}</span>
-                            </li>`
-                    ).join('');
-                    document.getElementById('allPizzaSales').innerHTML = allHtml;
-                } else {
-                    document.getElementById('topPizzas').innerHTML = '<li>No data</li>';
-                    document.getElementById('allPizzaSales').innerHTML = '<li>No data</li>';
-                }
-
-                renderTrendChart(data.dailyOrders || []);
-            } else {
-                console.error('Failed to load report:', result.message);
-                setMockData();
+            if (!salesRes.ok || !topRes.ok || !trendRes.ok) {
+                throw new Error('One or more API calls failed');
             }
+
+            const salesData = await salesRes.json();
+            const topPizzas = await topRes.json();
+            const dailyTrend = await trendRes.json();
+
+            console.log('Sales data:', salesData);
+            console.log('Top pizzas:', topPizzas);
+            console.log('Daily trend:', dailyTrend);
+
+            // Render stats
+            document.getElementById('totalSales').innerText = salesData.totalSales || 0;
+            document.getElementById('totalOrderCount').innerText = salesData.totalOrders || 0;
+            document.getElementById('avgOrderAmount').innerText = (salesData.averageOrderValue || 0).toFixed(1);
+
+            // Render top pizzas
+            if (topPizzas.length > 0) {
+                const topHtml = topPizzas.slice(0, 3).map((pizza, idx) =>
+                    `<li class="rank-${idx+1}">
+                            <span>${idx+1}. ${pizza.pizzaName}</span>
+                            <span>Sales: ${pizza.totalQuantity}</span>
+                        </li>`
+                ).join('');
+                document.getElementById('topPizzas').innerHTML = topHtml;
+
+                const allHtml = topPizzas.map(pizza =>
+                    `<li>
+                            <span>${pizza.pizzaName}</span>
+                            <span>Sales: ${pizza.totalQuantity}</span>
+                        </li>`
+                ).join('');
+                document.getElementById('allPizzaSales').innerHTML = allHtml;
+            } else {
+                document.getElementById('topPizzas').innerHTML = '<li>No data</li>';
+                document.getElementById('allPizzaSales').innerHTML = '<li>No data</li>';
+            }
+
+            // Render trend chart
+            renderTrendChart(dailyTrend.map(d => ({
+                date: d.date,
+                count: d.orderCount
+            })));
+
         } catch (error) {
-            console.error('Network error:', error);
+            console.error('Failed to load report:', error);
             setMockData();
         }
     }

@@ -144,12 +144,12 @@
 </head>
 <body>
 <div class="admin-sidebar">
-    <h3>🍕 Pizza Admin</h3>
-    <a href=" ">📋 Order Management</a>
-    <a href="admin_inventory.html" class="active">📦 Topping Inventory</a>
-    <a href="admin_reports.html">📊 Reports</a>
-    <a href="menu.html" style="margin-top: 50px;">🏠 Back to Store</a>
-    <a href="#" id="adminLogoutBtn">🚪 Logout</a>
+    <h3>Pizza Admin</h3>
+    <a href="admin_orders.html">Order Management</a>
+    <a href="admin_inventory.html" class="active">Topping Inventory</a>
+    <a href="admin_reports.html">Reports</a>
+    <a href="menu.html" style="margin-top: 50px;">Back to Store</a>
+    <a href="#" id="adminLogoutBtn">Logout</a>
 </div>
 
 <div class="admin-content">
@@ -197,7 +197,7 @@
 
     async function loadToppings() {
         try {
-            const response = await fetch(`${API_BASE}/admin/toppings`);
+            const response = await fetch(`${API_BASE}/api/toppings`);
             const result = await response.json();
             console.log('Topping list:', result);
 
@@ -246,7 +246,7 @@
                         <td>
                             <input type="number" class="stock-input" id="stock_${toppingId}" value="${stock}" min="0">
                         </td>
-                        <td class="${isLowStock ? 'low-stock' : ''}">${isLowStock ? '⚠️ Low Stock' : 'Sufficient'}</td>
+                        <td class="${isLowStock ? 'low-stock' : ''}">${isLowStock ? 'Low Stock' : 'Sufficient'}</td>
                         <td>
                             <button class="btn-sm btn-edit" onclick="updateStock(${toppingId})">Update Stock</button>
                             <button class="btn-sm btn-delete" onclick="deleteTopping(${toppingId})">Delete</button>
@@ -264,7 +264,7 @@
         if (!topping) return;
 
         try {
-            const response = await fetch(`${API_BASE}/admin/toppings/${toppingId}`, {
+            const response = await fetch(`${API_BASE}/api/toppings/${toppingId}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -275,7 +275,7 @@
                 })
             });
             const result = await response.json();
-            if (result.code === 200) {
+            if (result.success || result.code === 200) {
                 alert('Stock updated');
                 loadToppings();
             } else {
@@ -291,11 +291,11 @@
         if (!confirm('Are you sure you want to delete this topping?')) return;
 
         try {
-            const response = await fetch(`${API_BASE}/admin/toppings/${toppingId}`, {
+            const response = await fetch(`${API_BASE}/api/toppings/${toppingId}`, {
                 method: 'DELETE'
             });
             const result = await response.json();
-            if (result.code === 200) {
+            if (result.success || result.code === 200) {
                 alert('Deleted');
                 loadToppings();
             } else {
@@ -331,13 +331,13 @@
         }
 
         try {
-            const response = await fetch(`${API_BASE}/admin/toppings`, {
+            const response = await fetch(`${API_BASE}/api/toppings`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ name, price, stockQuantity: stock })
             });
             const result = await response.json();
-            if (result.code === 200) {
+            if (result.success || result.code === 200) {
                 alert('Added successfully');
                 closeModal();
                 loadToppings();
