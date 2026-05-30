@@ -14,7 +14,7 @@ body {
     padding: 20px;
 }
 
-/* 卡片容器 */
+/* Card container */
 .card {
     background: white;
     border-radius: 16px;
@@ -35,7 +35,7 @@ body {
     color: #e74c3c;
 }
 
-/* 表单组 */
+/* Form group */
 .form-group {
     margin-bottom: 16px;
 }
@@ -61,7 +61,7 @@ body {
     border-color: #e74c3c;
 }
 
-/* 按钮 */
+/* Button */
 .btn {
     width: 100%;
     padding: 12px;
@@ -92,7 +92,7 @@ body {
     opacity: 0.9;
 }
 
-/* 链接 */
+/* Link */
 .link {
     text-align: center;
     margin-top: 20px;
@@ -108,7 +108,7 @@ body {
     text-decoration: underline;
 }
 
-/* 错误提示 */
+/* Error message */
 .error-msg {
     color: #e74c3c;
     font-size: 14px;
@@ -116,7 +116,7 @@ body {
     display: none;
 }
 
-/* 导航栏（其他页面用） */
+/* Navbar (used by other pages) */
 .navbar {
     background: white;
     padding: 12px 24px;
@@ -168,14 +168,14 @@ body {
     padding: 0 20px;
 }
 
-/* 网格布局 */
+/* Grid layout */
 .grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 24px;
 }
 
-/* 披萨卡片 */
+/* Pizza card */
 .pizza-card {
     background: white;
     border-radius: 12px;

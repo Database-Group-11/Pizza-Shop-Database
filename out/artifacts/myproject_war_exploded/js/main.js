@@ -1,7 +1,7 @@
-// ========== API 配置 ==========
+// ========== API Config ==========
 const API_BASE = 'http://localhost:8080';
 
-// ========== 登录页面逻辑 ==========
+// ========== Login page logic ==========
 if (document.getElementById('loginForm')) {
     const loginForm = document.getElementById('loginForm');
 
@@ -12,26 +12,26 @@ if (document.getElementById('loginForm')) {
         const password = document.getElementById('password').value;
 
         if (!phone || !password) {
-            showError('errorMsg', '请填写手机号和密码');
+            showError('errorMsg', 'Please enter phone number and password');
             return;
         }
 
-        // ========== 临时测试账号（绕过后端）==========
-        // 只要手机号输入 13800138000，密码任意，就能登录
+        // ========== Temporary test account (bypasses backend) ==========
+        // Enter 13800138000 as phone, any password to login
         if (phone === '13800138000') {
             const testUser = {
                 customerId: 1,
-                name: '测试用户',
+                name: 'Test User',
                 phone: '13800138000',
-                address: '北京市朝阳区测试路123号'
+                address: '123 Test Road, Chaoyang District, Beijing'
             };
             setCurrentUser(testUser);
             window.location.href = 'menu.html';
             return;
         }
-        // ========== 测试账号结束 ==========
+        // ========== Test account end ==========
 
-        // 正常后端登录（等后端好了再启用）
+        // Normal backend login (enable when backend is ready)
         try {
             const response = await fetch(`${API_BASE}/api/customer/login`, {
                 method: 'POST',
@@ -50,34 +50,34 @@ if (document.getElementById('loginForm')) {
                 setCurrentUser(user);
                 window.location.href = 'menu.html';
             } else {
-                showError('errorMsg', result.message || '登录失败');
+                showError('errorMsg', result.message || 'Login failed');
             }
         } catch (error) {
-            showError('errorMsg', '网络错误，请稍后重试');
+            showError('errorMsg', 'Network error, please try again later');
         }
     });
 }
-// ========== 公共工具函数 ==========
+// ========== Common utility functions ==========
 
-// 获取当前登录用户
+// Get current logged-in user
 function getCurrentUser() {
     const user = localStorage.getItem('currentUser');
     return user ? JSON.parse(user) : null;
 }
 
-// 设置登录状态
+// Set login state
 function setCurrentUser(user) {
     localStorage.setItem('currentUser', JSON.stringify(user));
 }
 
-// 退出登录
+// Logout
 function logout() {
     localStorage.removeItem('currentUser');
     localStorage.removeItem('cart');
     window.location.href = 'login.html';
 }
 
-// 显示错误消息
+// Show error message
 function showError(elementId, message) {
     const errorEl = document.getElementById(elementId);
     if (errorEl) {
@@ -89,7 +89,7 @@ function showError(elementId, message) {
     }
 }
 
-// ========== 购物车公共函数 ==========
+// ========== Shopping cart common functions ==========
 function getCart() {
     const cart = localStorage.getItem('cart');
     return cart ? JSON.parse(cart) : [];
@@ -97,7 +97,7 @@ function getCart() {
 
 function saveCart(cart) {
     localStorage.setItem('cart', JSON.stringify(cart));
-    // 更新所有页面的购物车角标
+    // Update cart badge on all pages
     const cartCountSpans = document.querySelectorAll('#cartCount');
     const count = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
     cartCountSpans.forEach(span => {
@@ -108,20 +108,20 @@ function saveCart(cart) {
 function addToCart(pizza, selectedToppings, quantity) {
     const cart = getCart();
 
-    // 确保 pizzaId 存在（兼容 pizza_id 和 pizzaId 两种格式）
+    // Ensure pizzaId exists (compatible with both pizza_id and pizzaId formats)
     const pizzaId = pizza.pizzaId || pizza.pizza_id;
 
-    console.log('添加购物车 - pizza:', pizza);
-    console.log('添加购物车 - pizzaId:', pizzaId);
+    console.log('Add to cart - pizza:', pizza);
+    console.log('Add to cart - pizzaId:', pizzaId);
 
-    // 计算配料总价
+    // Calculate total toppings price
     const toppingsTotal = selectedToppings.reduce((sum, t) => sum + (t.price * t.quantity), 0);
     const basePrice = pizza.basePrice || pizza.base_price || 0;
-    const itemTotal = (basePrice + toppingsTotal) * quantity;
+    const itemTotal = parseFloat(((basePrice + toppingsTotal) * quantity).toFixed(2));
 
     const cartItem = {
         id: Date.now(),
-        pizzaId: pizzaId,                    // ← 关键：必须保存 pizzaId
+        pizzaId: pizzaId,                    // ← Key: must save pizzaId
         pizzaName: pizza.name,
         basePrice: basePrice,
         toppings: selectedToppings,
@@ -129,22 +129,22 @@ function addToCart(pizza, selectedToppings, quantity) {
         total: itemTotal
     };
 
-    console.log('添加到购物车的商品:', cartItem);
+    console.log('Item added to cart:', cartItem);
 
     cart.push(cartItem);
     saveCart(cart);
-    alert(`已添加 ${quantity} 份 ${pizza.name} 到购物车`);
+    alert(`Added ${quantity}x ${pizza.name} to cart`);
 }
 
-// ========== 状态映射（文档格式 → 中文显示）==========
+// ========== Status mapping (doc format → display text) ==========
 function getStatusText(status) {
     const map = {
-        'pending': '⏳ 待支付',
-        'paid': '✅ 已支付',
-        'preparing': '🍳 制作中',
-        'delivering': '🚚 配送中',
-        'completed': '🎉 已完成',
-        'cancelled': '❌ 已取消'
+        'pending': '⏳ Pending',
+        'paid': '✅ Paid',
+        'preparing': '🍳 Preparing',
+        'delivering': '🚚 Delivering',
+        'completed': '🎉 Completed',
+        'cancelled': '❌ Cancelled'
     };
     return map[status] || status;
 }
@@ -167,7 +167,7 @@ function formatDate(dateStr) {
     return `${d.getMonth()+1}/${d.getDate()} ${d.getHours()}:${String(d.getMinutes()).padStart(2,'0')}`;
 }
 
-// ========== 登录页面逻辑 ==========
+// ========== Login page logic ==========
 if (document.getElementById('loginForm')) {
     const loginForm = document.getElementById('loginForm');
 
@@ -178,7 +178,7 @@ if (document.getElementById('loginForm')) {
         const password = document.getElementById('password').value;
 
         if (!phone || !password) {
-            showError('errorMsg', '请填写手机号和密码');
+            showError('errorMsg', 'Please enter phone number and password');
             return;
         }
 
@@ -190,7 +190,7 @@ if (document.getElementById('loginForm')) {
             });
             const result = await response.json();
             if (result.code === 200) {
-                // 转换字段名（后端返回的是 customerId）
+                // Map field names (backend returns customerId)
                 const user = {
                     customerId: result.data.customerId,
                     name: result.data.name,
@@ -200,15 +200,15 @@ if (document.getElementById('loginForm')) {
                 setCurrentUser(user);
                 window.location.href = 'menu.html';
             } else {
-                showError('errorMsg', result.message || '登录失败');
+                showError('errorMsg', result.message || 'Login failed');
             }
         } catch (error) {
-            showError('errorMsg', '网络错误，请稍后重试');
+            showError('errorMsg', 'Network error, please try again later');
         }
     });
 }
 
-// ========== 注册页面逻辑 ==========
+// ========== Register page logic ==========
 if (document.getElementById('registerForm')) {
     const registerForm = document.getElementById('registerForm');
 
@@ -222,17 +222,17 @@ if (document.getElementById('registerForm')) {
         const address = document.getElementById('address').value;
 
         if (!name || !phone || !password || !address) {
-            showError('errorMsg', '请填写所有字段');
+            showError('errorMsg', 'Please fill in all fields');
             return;
         }
 
         if (password !== confirmPassword) {
-            showError('errorMsg', '两次输入的密码不一致');
+            showError('errorMsg', 'Passwords do not match');
             return;
         }
 
         if (!/^1[3-9]\d{9}$/.test(phone)) {
-            showError('errorMsg', '请输入正确的手机号');
+            showError('errorMsg', 'Please enter a valid phone number');
             return;
         }
 
@@ -244,18 +244,18 @@ if (document.getElementById('registerForm')) {
             });
             const result = await response.json();
             if (result.code === 200) {
-                alert('注册成功！请登录');
+                alert('Registration successful! Please login');
                 window.location.href = 'login.html';
             } else {
-                showError('errorMsg', result.message || '注册失败');
+                showError('errorMsg', result.message || 'Registration failed');
             }
         } catch (error) {
-            showError('errorMsg', '网络错误，请稍后重试');
+            showError('errorMsg', 'Network error, please try again later');
         }
     });
 }
 
-// 导出函数供全局使用
+// Export functions for global use
 window.getCurrentUser = getCurrentUser;
 window.setCurrentUser = setCurrentUser;
 window.logout = logout;
@@ -266,5 +266,4 @@ window.getStatusText = getStatusText;
 window.getStatusClass = getStatusClass;
 window.formatDate = formatDate;
 window.API_BASE = API_BASE;
-
 

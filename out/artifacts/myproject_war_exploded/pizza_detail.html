@@ -76,16 +76,16 @@
         }
 
         const userNameSpan = document.getElementById('userNameDisplay');
-        if (userNameSpan) userNameSpan.textContent = `欢迎，${user.name}`;
+        if (userNameSpan) userNameSpan.textContent = `Welcome, ${user.name}`;
 
         updateCartCount();
 
         const urlParams = new URLSearchParams(window.location.search);
         const pizzaId = urlParams.get('pizza_id');
-        console.log('获取到的披萨ID:', pizzaId);
+        console.log('Retrieved pizza ID:', pizzaId);
 
         if (!pizzaId) {
-            alert('请先从菜单选择披萨');
+            alert('Please select a pizza from the menu first');
             window.location.href = 'menu.html';
             return;
         }

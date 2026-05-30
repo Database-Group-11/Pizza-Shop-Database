@@ -117,7 +117,7 @@ function addToCart(pizza, selectedToppings, quantity) {
     // Calculate total toppings price
     const toppingsTotal = selectedToppings.reduce((sum, t) => sum + (t.price * t.quantity), 0);
     const basePrice = pizza.basePrice || pizza.base_price || 0;
-    const itemTotal = (basePrice + toppingsTotal) * quantity;
+    const itemTotal = parseFloat(((basePrice + toppingsTotal) * quantity).toFixed(2));
 
     const cartItem = {
         id: Date.now(),

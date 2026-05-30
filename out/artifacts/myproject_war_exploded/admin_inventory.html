@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>配料库存 - 后台</title>
+    <title>Topping Inventory - Admin</title>
     <link rel="stylesheet" href="css/style.css">
     <style>
         .admin-sidebar {
@@ -144,40 +144,40 @@
 </head>
 <body>
 <div class="admin-sidebar">
-    <h3>🍕 披萨后台</h3>
-    <a href=" ">📋 订单管理</a >
-    <a href="admin_inventory.html" class="active">📦 配料库存</a >
-    <a href="admin_reports.html">📊 数据报表</a >
-    <a href="menu.html" style="margin-top: 50px;">🏠 返回前台</a >
-    <a href="#" id="adminLogoutBtn">🚪 退出登录</a >
+    <h3>🍕 Pizza Admin</h3>
+    <a href=" ">📋 Order Management</a>
+    <a href="admin_inventory.html" class="active">📦 Topping Inventory</a>
+    <a href="admin_reports.html">📊 Reports</a>
+    <a href="menu.html" style="margin-top: 50px;">🏠 Back to Store</a>
+    <a href="#" id="adminLogoutBtn">🚪 Logout</a>
 </div>
 
 <div class="admin-content">
     <div class="admin-header">
-        <h2>配料库存管理</h2>
-        <button class="add-btn" onclick="openAddModal()">+ 新增配料</button>
+        <h2>Topping Inventory Management</h2>
+        <button class="add-btn" onclick="openAddModal()">+ Add Topping</button>
     </div>
 
-    </table>
+    <table>
     <thead>
-    <tr><th>ID</th><th>配料名称</th><th>价格(元)</th><th>库存数量</th><th>状态</th><th>操作</th></tr>
+    <tr><th>ID</th><th>Topping Name</th><th>Price (¥)</th><th>Stock Qty</th><th>Status</th><th>Actions</th></tr>
     </thead>
     <tbody id="toppingsTableBody">
-    <tr><td colspan="6" style="text-align:center;">加载中...</td></tr>
+    <tr><td colspan="6" style="text-align:center;">Loading...</td></tr>
     </tbody>
     </table>
 </div>
 
-<!-- 新增/编辑弹窗 -->
+<!-- Add/Edit Modal -->
 <div id="modal" class="modal">
     <div class="modal-content">
-        <h3 id="modalTitle">新增配料</h3>
-        <input type="text" id="toppingName" placeholder="配料名称">
-        <input type="number" id="toppingPrice" placeholder="价格(元)" step="0.5">
-        <input type="number" id="toppingStock" placeholder="库存数量">
+        <h3 id="modalTitle">Add Topping</h3>
+        <input type="text" id="toppingName" placeholder="Topping name">
+        <input type="number" id="toppingPrice" placeholder="Price (¥)" step="0.5">
+        <input type="number" id="toppingStock" placeholder="Stock quantity">
         <div class="modal-buttons">
-            <button class="btn-save" onclick="saveTopping()">保存</button>
-            <button class="btn-delete" onclick="closeModal()">取消</button>
+            <button class="btn-save" onclick="saveTopping()">Save</button>
+            <button class="btn-delete" onclick="closeModal()">Cancel</button>
         </div>
     </div>
 </div>
@@ -199,24 +199,24 @@
         try {
             const response = await fetch(`${API_BASE}/admin/toppings`);
             const result = await response.json();
-            console.log('配料列表:', result);
+            console.log('Topping list:', result);
 
             if (result.code === 200) {
                 toppings = result.data;
                 renderTable();
             } else {
-                console.error('加载配料失败:', result.message);
+                console.error('Failed to load toppings:', result.message);
             }
         } catch (error) {
-            console.error('网络错误:', error);
-            // 使用模拟数据
+            console.error('Network error:', error);
+            // Use mock data
             toppings = [
-                { toppingId: 1, name: '加芝士', price: 8, stockQuantity: 100 },
-                { toppingId: 2, name: '培根', price: 10, stockQuantity: 50 },
-                { toppingId: 3, name: '蘑菇', price: 6, stockQuantity: 80 },
-                { toppingId: 4, name: '青椒', price: 5, stockQuantity: 15 },
-                { toppingId: 5, name: '玉米', price: 5, stockQuantity: 70 },
-                { toppingId: 6, name: '洋葱', price: 4, stockQuantity: 90 }
+                { toppingId: 1, name: 'Extra Cheese', price: 8, stockQuantity: 100 },
+                { toppingId: 2, name: 'Bacon', price: 10, stockQuantity: 50 },
+                { toppingId: 3, name: 'Mushroom', price: 6, stockQuantity: 80 },
+                { toppingId: 4, name: 'Green Pepper', price: 5, stockQuantity: 15 },
+                { toppingId: 5, name: 'Corn', price: 5, stockQuantity: 70 },
+                { toppingId: 6, name: 'Onion', price: 4, stockQuantity: 90 }
             ];
             renderTable();
         }
@@ -227,7 +227,7 @@
         if (!tbody) return;
 
         if (toppings.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">暂无数据</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No data</td></tr>';
             return;
         }
 
@@ -246,10 +246,10 @@
                         <td>
                             <input type="number" class="stock-input" id="stock_${toppingId}" value="${stock}" min="0">
                         </td>
-                        <td class="${isLowStock ? 'low-stock' : ''}">${isLowStock ? '⚠️ 库存不足' : '充足'}</td>
+                        <td class="${isLowStock ? 'low-stock' : ''}">${isLowStock ? '⚠️ Low Stock' : 'Sufficient'}</td>
                         <td>
-                            <button class="btn-sm btn-edit" onclick="updateStock(${toppingId})">更新库存</button>
-                            <button class="btn-sm btn-delete" onclick="deleteTopping(${toppingId})">删除</button>
+                            <button class="btn-sm btn-edit" onclick="updateStock(${toppingId})">Update Stock</button>
+                            <button class="btn-sm btn-delete" onclick="deleteTopping(${toppingId})">Delete</button>
                         </td>
                     </tr>
                 `;
@@ -276,19 +276,19 @@
             });
             const result = await response.json();
             if (result.code === 200) {
-                alert('库存已更新');
+                alert('Stock updated');
                 loadToppings();
             } else {
-                alert(result.message || '更新失败');
+                alert(result.message || 'Update failed');
             }
         } catch (error) {
-            console.error('更新失败:', error);
-            alert('网络错误，请稍后重试');
+            console.error('Update failed:', error);
+            alert('Network error, please try again later');
         }
     }
 
     async function deleteTopping(toppingId) {
-        if (!confirm('确定要删除这个配料吗？')) return;
+        if (!confirm('Are you sure you want to delete this topping?')) return;
 
         try {
             const response = await fetch(`${API_BASE}/admin/toppings/${toppingId}`, {
@@ -296,20 +296,20 @@
             });
             const result = await response.json();
             if (result.code === 200) {
-                alert('已删除');
+                alert('Deleted');
                 loadToppings();
             } else {
-                alert(result.message || '删除失败');
+                alert(result.message || 'Delete failed');
             }
         } catch (error) {
-            console.error('删除失败:', error);
-            alert('网络错误');
+            console.error('Delete failed:', error);
+            alert('Network error');
         }
     }
 
     function openAddModal() {
         editId = null;
-        document.getElementById('modalTitle').innerText = '新增配料';
+        document.getElementById('modalTitle').innerText = 'Add Topping';
         document.getElementById('toppingName').value = '';
         document.getElementById('toppingPrice').value = '';
         document.getElementById('toppingStock').value = '';
@@ -326,7 +326,7 @@
         const stock = parseInt(document.getElementById('toppingStock').value);
 
         if (!name || isNaN(price) || isNaN(stock)) {
-            alert('请填写完整信息');
+            alert('Please fill in all fields');
             return;
         }
 
@@ -338,15 +338,15 @@
             });
             const result = await response.json();
             if (result.code === 200) {
-                alert('添加成功');
+                alert('Added successfully');
                 closeModal();
                 loadToppings();
             } else {
-                alert(result.message || '添加失败');
+                alert(result.message || 'Add failed');
             }
         } catch (error) {
-            console.error('添加失败:', error);
-            alert('网络错误');
+            console.error('Add failed:', error);
+            alert('Network error');
         }
     }
 

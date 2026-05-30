@@ -54,7 +54,7 @@ SOURCE D:/your-project-path/pizza-order-system/sql/indexes.sql;
 USE pizza_shop;
 SHOW TABLES;                    -- Should show 8 tables
 SELECT COUNT(*) FROM customers; -- 3
-SELECT COUNT(*) FROM pizzas;     -- 5
+SELECT COUNT(*) FROM pizzas;     -- 7
 SELECT COUNT(*) FROM toppings;   -- 7
 ```
 

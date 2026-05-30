@@ -14,7 +14,9 @@ INSERT INTO pizzas (name, description, base_price, category, image, available, s
                                                                                                                   ('Pepperoni', 'Italian spicy sausage pizza', 10.99, 'Classic', NULL, 1, 80, 10),
                                                                                                                   ('Hawaiian', 'Ham and pineapple pizza', 11.99, 'Specialty', NULL, 1, 60, 10),
                                                                                                                   ('Meat Lovers', 'Meat lovers pizza', 13.99, 'Specialty', NULL, 1, 50, 10),
-                                                                                                                  ('Veggie Supreme', 'Vegetarian supreme pizza', 12.99, 'Vegetarian', NULL, 1, 70, 10);
+                                                                                                                  ('Veggie Supreme', 'Vegetarian supreme pizza', 12.99, 'Vegetarian', NULL, 1, 70, 10),
+                                                                                                                  ('BBQ Chicken', 'Grilled chicken with smoky BBQ sauce', 12.99, 'Meat', NULL, 1, 60, 10),
+                                                                                                                  ('Seafood Deluxe', 'Shrimp, squid and mussels', 14.99, 'Seafood', NULL, 1, 40, 10);
 
 -- 3. Toppings data
 INSERT INTO toppings (name, price, stock_quantity, available) VALUES

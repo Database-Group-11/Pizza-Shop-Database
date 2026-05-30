@@ -243,13 +243,13 @@
         let grandTotal = 0;
 
         const itemsHtml = currentCart.map((item, index) => {
-            const toppingsTotal = (item.toppings || []).reduce((sum, t) => sum + (t.price * t.quantity), 0);
-            const unitTotal = (item.basePrice || 0) + toppingsTotal;
-            const itemTotal = unitTotal * (item.quantity || 1);
+            const toppingsTotal = parseFloat((item.toppings || []).reduce((sum, t) => sum + (t.price * t.quantity), 0).toFixed(2));
+            const unitTotal = parseFloat(((item.basePrice || 0) + toppingsTotal).toFixed(2));
+            const itemTotal = parseFloat((unitTotal * (item.quantity || 1)).toFixed(2));
             grandTotal += itemTotal;
 
             const toppingsHtml = (item.toppings || []).map(t =>
-                `<span>${t.name} x${t.quantity} (+¥${t.price * t.quantity})</span>`
+                `<span>${t.name} x${t.quantity} (+¥${(t.price * t.quantity).toFixed(2)})</span>`
             ).join('');
 
             return `
@@ -297,8 +297,8 @@
 
         currentCart[index].quantity = newQty;
 
-        const toppingsTotal = (currentCart[index].toppings || []).reduce((sum, t) => sum + (t.price * t.quantity), 0);
-        currentCart[index].total = ((currentCart[index].basePrice || 0) + toppingsTotal) * newQty;
+        const toppingsTotal = parseFloat((currentCart[index].toppings || []).reduce((sum, t) => sum + (t.price * t.quantity), 0).toFixed(2));
+        currentCart[index].total = parseFloat((((currentCart[index].basePrice || 0) + toppingsTotal) * newQty).toFixed(2));
 
         saveCart(currentCart);
         loadCart();

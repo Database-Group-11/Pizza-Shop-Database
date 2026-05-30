@@ -153,7 +153,7 @@
         }
 
         container.innerHTML = cart.map(item => {
-            const itemTotal = item.total || ((item.basePrice || 0) + (item.toppings || []).reduce((s, t) => s + t.price * t.quantity, 0)) * (item.quantity || 1);
+            const itemTotal = item.total || parseFloat((((item.basePrice || 0) + (item.toppings || []).reduce((s, t) => s + t.price * t.quantity, 0)) * (item.quantity || 1)).toFixed(2));
             total += itemTotal;
             return `
                 <div class="order-item">
