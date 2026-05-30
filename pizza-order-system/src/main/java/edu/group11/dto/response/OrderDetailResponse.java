@@ -23,7 +23,7 @@ public class OrderDetailResponse {
     private PaymentResponse payment;
     private DeliveryResponse delivery;
 
-    // 嵌套类
+    // Nested classes
     public static class OrderItemResponse {
         private int pizzaId;
         private String pizzaName;

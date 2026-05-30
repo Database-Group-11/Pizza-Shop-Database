@@ -32,7 +32,7 @@ public class PizzaServlet extends HttpServlet {
         response.setCharacterEncoding("UTF-8");
 
         try {
-            // 检查是否有category查询参数
+            // Check if there is a category query parameter
             String categoryParam = request.getParameter("category");
             if (categoryParam != null && !categoryParam.isEmpty()) {
                 List<Pizza> pizzas = pizzaDAO.getPizzasByCategory(categoryParam);
@@ -165,7 +165,7 @@ public class PizzaServlet extends HttpServlet {
             sendResponse(response, 400, "Parameter format error", null);
         } catch (Exception e) {
             e.printStackTrace();
-            sendResponse(response, 500, "服务器内部错误: " + e.getMessage(), null);
+            sendResponse(response, 500, "Server internal error: " + e.getMessage(), null);
         }
     }
 
@@ -173,7 +173,7 @@ public class PizzaServlet extends HttpServlet {
         Pizza pizza = new Pizza();
         pizza.setName(extractJsonValue(json, "name"));
         pizza.setDescription(extractJsonValue(json, "description"));
-        // 兼容两种字段名
+        // Compatible with both field name formats
         String basePriceStr = extractJsonValue(json, "basePrice");
         if (basePriceStr == null) {
             basePriceStr = extractJsonValue(json, "base_price");

@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>数据报表 - 后台</title>
+    <title>Reports - Admin</title>
     <link rel="stylesheet" href="css/style.css">
     <style>
         .admin-sidebar {
@@ -132,56 +132,56 @@
 </head>
 <body>
 <div class="admin-sidebar">
-    <h3>🍕 披萨后台</h3>
-    <a href=" ">📋 订单管理</a >
-    <a href="admin_inventory.html">📦 配料库存</a >
-    <a href="admin_reports.html" class="active">📊 数据报表</a >
-    <a href="menu.html" style="margin-top: 50px;">🏠 返回前台</a >
-    <a href="#" id="adminLogoutBtn">🚪 退出登录</a >
+    <h3>🍕 Pizza Admin</h3>
+    <a href=" ">📋 Order Management</a>
+    <a href="admin_inventory.html">📦 Topping Inventory</a>
+    <a href="admin_reports.html" class="active">📊 Reports</a>
+    <a href="menu.html" style="margin-top: 50px;">🏠 Back to Store</a>
+    <a href="#" id="adminLogoutBtn">🚪 Logout</a>
 </div>
 
 <div class="admin-content">
     <div class="admin-header">
-        <h2>数据报表</h2>
+        <h2>Reports</h2>
     </div>
 
     <div class="stats-grid">
         <div class="stat-card">
             <div class="number" id="totalSales">0</div>
-            <div class="label">总营业额(元)</div>
+            <div class="label">Total Revenue (¥)</div>
         </div>
         <div class="stat-card">
             <div class="number" id="totalOrderCount">0</div>
-            <div class="label">总订单数</div>
+            <div class="label">Total Orders</div>
         </div>
         <div class="stat-card">
             <div class="number" id="avgOrderAmount">0</div>
-            <div class="label">客单价(元)</div>
+            <div class="label">Avg Order Value (¥)</div>
         </div>
     </div>
 
     <div class="report-section">
-        <h3>🏆 畅销披萨 TOP 3</h3>
+        <h3>🏆 Top Selling Pizzas TOP 3</h3>
         <ul class="sales-list" id="topPizzas">
-            <li>加载中...</li>
+            <li>Loading...</li>
         </ul>
     </div>
 
     <div class="report-section">
-        <h3>📈 近7天订单趋势</h3>
+        <h3>📈 Last 7 Days Order Trend</h3>
         <div id="trendChart" class="trend-chart">
-            <div style="text-align:center; width:100%;">加载中...</div>
+            <div style="text-align:center; width:100%;">Loading...</div>
         </div>
     </div>
 
     <div class="report-section">
-        <h3>🍕 披萨销量统计</h3>
+        <h3>🍕 Pizza Sales Statistics</h3>
         <ul class="sales-list" id="allPizzaSales">
-            <li>加载中...</li>
+            <li>Loading...</li>
         </ul>
     </div>
 
-    <button class="export-btn" onclick="exportReport()">📎 导出报表(JSON)</button>
+    <button class="export-btn" onclick="exportReport()">📎 Export Report (JSON)</button>
 </div>
 
 <script src="js/main.js"></script>
@@ -198,7 +198,7 @@
         try {
             const response = await fetch(`${API_BASE}/admin/reports`);
             const result = await response.json();
-            console.log('报表数据:', result);
+            console.log('Report data:', result);
 
             if (result.code === 200) {
                 const data = result.data;
@@ -211,7 +211,7 @@
                     const topHtml = topPizzas.slice(0, 3).map((pizza, idx) =>
                         `<li class="rank-${idx+1}">
                                 <span>${idx+1}. ${pizza.pizzaName || pizza.name}</span>
-                                <span>销量: ${pizza.totalQuantity || pizza.quantity}</span>
+                                <span>Sales: ${pizza.totalQuantity || pizza.quantity}</span>
                             </li>`
                     ).join('');
                     document.getElementById('topPizzas').innerHTML = topHtml;
@@ -219,22 +219,22 @@
                     const allHtml = topPizzas.map(pizza =>
                         `<li>
                                 <span>${pizza.pizzaName || pizza.name}</span>
-                                <span>销量: ${pizza.totalQuantity || pizza.quantity}</span>
+                                <span>Sales: ${pizza.totalQuantity || pizza.quantity}</span>
                             </li>`
                     ).join('');
                     document.getElementById('allPizzaSales').innerHTML = allHtml;
                 } else {
-                    document.getElementById('topPizzas').innerHTML = '<li>暂无数据</li>';
-                    document.getElementById('allPizzaSales').innerHTML = '<li>暂无数据</li>';
+                    document.getElementById('topPizzas').innerHTML = '<li>No data</li>';
+                    document.getElementById('allPizzaSales').innerHTML = '<li>No data</li>';
                 }
 
                 renderTrendChart(data.dailyOrders || []);
             } else {
-                console.error('加载报表失败:', result.message);
+                console.error('Failed to load report:', result.message);
                 setMockData();
             }
         } catch (error) {
-            console.error('网络错误:', error);
+            console.error('Network error:', error);
             setMockData();
         }
     }
@@ -245,16 +245,16 @@
         document.getElementById('avgOrderAmount').innerText = '80.6';
 
         document.getElementById('topPizzas').innerHTML = `
-                <li class="rank-1"><span>1. 经典玛格丽特</span><span>销量: 45</span></li>
-                <li class="rank-2"><span>2. 超级至尊</span><span>销量: 38</span></li>
-                <li class="rank-3"><span>3. 海鲜总汇</span><span>销量: 32</span></li>
+                <li class="rank-1"><span>1. Classic Margherita</span><span>Sales: 45</span></li>
+                <li class="rank-2"><span>2. Supreme</span><span>Sales: 38</span></li>
+                <li class="rank-3"><span>3. Seafood Mix</span><span>Sales: 32</span></li>
             `;
         document.getElementById('allPizzaSales').innerHTML = `
-                <li><span>经典玛格丽特</span><span>销量: 45</span></li>
-                <li><span>超级至尊</span><span>销量: 38</span></li>
-                <li><span>海鲜总汇</span><span>销量: 32</span></li>
-                <li><span>夏威夷风情</span><span>销量: 28</span></li>
-                <li><span>四重芝士</span><span>销量: 25</span></li>
+                <li><span>Classic Margherita</span><span>Sales: 45</span></li>
+                <li><span>Supreme</span><span>Sales: 38</span></li>
+                <li><span>Seafood Mix</span><span>Sales: 32</span></li>
+                <li><span>Hawaiian Style</span><span>Sales: 28</span></li>
+                <li><span>Four Cheese</span><span>Sales: 25</span></li>
             `;
 
         const mockDaily = [
@@ -270,7 +270,7 @@
         if (!container) return;
 
         if (!dailyData || dailyData.length === 0) {
-            container.innerHTML = '<div style="text-align:center; width:100%;">暂无数据</div>';
+            container.innerHTML = '<div style="text-align:center; width:100%;">No data</div>';
             return;
         }
 
@@ -298,11 +298,11 @@
             allPizzaSales: []
         };
 
-        // 收集畅销披萨数据
+        // Collect top pizza data
         const topItems = document.querySelectorAll('#topPizzas li');
         topItems.forEach(item => {
             const text = item.innerText;
-            const match = text.match(/(\d+\.\s*)?(.+?)\s*销量:\s*(\d+)/);
+            const match = text.match(/(\d+\.\s*)?(.+?)\s*Sales:\s*(\d+)/);
             if (match) {
                 report.topPizzas.push({ name: match[2], quantity: parseInt(match[3]) });
             }
@@ -316,7 +316,7 @@
         a.download = `report_${new Date().toISOString().slice(0,19)}.json`;
         a.click();
         URL.revokeObjectURL(url);
-        alert('报表已导出');
+        alert('Report exported');
     }
 
     document.getElementById('adminLogoutBtn').addEventListener('click', (e) => {

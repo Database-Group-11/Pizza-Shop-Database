@@ -125,7 +125,7 @@
             }
         } catch (error) {
             console.error('fail to load order:', error);
-            document.getElementById('orderContent').innerHTML = '<div style="text-align:center; padding:40px; color:#e74c3c;">加载失败，请检查网络</div>';
+            document.getElementById('orderContent').innerHTML = '<div style="text-align:center; padding:40px; color:#e74c3c;">Failed to load, please check network</div>';
         }
     }
 
@@ -136,7 +136,7 @@
         const statusText = getStatusText(order.status);
         const statusClass = getStatusClass(order.status);
 
-        // 商品列表
+        // Item list
         let itemsHtml = '';
         if (order.items && order.items.length > 0) {
             for (let i = 0; i < order.items.length; i++) {
@@ -152,7 +152,7 @@
                         <div class="item-row">
                             <div class="item-name">
                                 🍕 ${item.pizzaName || item.pizza_name}
-                                <div class="item-toppings">${toppingsHtml || '无配料'}</div>
+                                <div class="item-toppings">${toppingsHtml || 'No toppings'}</div>
                             </div>
                             <div class="item-qty">x${item.quantity}</div>
                             <div class="item-price">¥${item.subtotal || item.price || (item.unitPrice * item.quantity)}</div>
@@ -161,7 +161,7 @@
             }
         }
 
-        // 按钮区域
+        // Button area
         let buttonsHtml = `<button class="btn-back" onclick="goToOrderHistory()">back to order list</button>`;
         if (order.status === 'pending') {
             buttonsHtml += `<button class="btn-pay" onclick="payOrder(${order.orderId})">pay now</button>`;
@@ -171,14 +171,14 @@
             buttonsHtml += `<button class="btn-pay" onclick="reorder(${order.orderId})">more orders</button>`;
         }
 
-        // 进度条
+        // Progress bar
         const stepsHtml = (order.status !== 'completed' && order.status !== 'cancelled') ? `
                 <div class="progress-steps">
                     ${['submit the order', 'confirm payment', 'delivering', 'completed'].map((label, idx) => `<div class="step" data-step="${idx}"><div class="step-circle">${idx === 0 ? '📝' : idx === 1 ? '💳' : idx === 2 ? '🚚' : '✅'}</div><div class="step-label">${label}</div></div>`).join('')}
                 </div>
             ` : '';
 
-        // 支付信息
+        // Payment info
         const paymentHtml = `
                 <div class="info-row">
                     <div class="info-label">payment way</div>
@@ -190,24 +190,24 @@
                 </div>
             `;
 
-        // 配送信息
+        // Delivery info
         const deliveryHtml = order.delivery ? `
                 <div class="delivery-info">
-                    <div class="info-row"><div class="info-label">骑手姓名</div><div class="info-value">${order.delivery.riderName || order.delivery.rider_name || 'waiting to distribute'}</div></div>
-                    <div class="info-row"><div class="info-label">骑手电话</div><div class="info-value">${order.delivery.riderPhone || order.delivery.rider_phone || '--'}</div></div>
-                    <div class="info-row"><div class="info-label">开始配送</div><div class="info-value">${formatDate(order.delivery.startTime || order.delivery.start_time) || '--'}</div></div>
-                    <div class="info-row"><div class="info-label">预计送达</div><div class="info-value">${formatDate(order.delivery.estimatedDeliveryTime) || '--'}</div></div>
+                    <div class="info-row"><div class="info-label">Rider Name</div><div class="info-value">${order.delivery.riderName || order.delivery.rider_name || 'waiting to distribute'}</div></div>
+                    <div class="info-row"><div class="info-label">Rider Phone</div><div class="info-value">${order.delivery.riderPhone || order.delivery.rider_phone || '--'}</div></div>
+                    <div class="info-row"><div class="info-label">Start Delivery</div><div class="info-value">${formatDate(order.delivery.startTime || order.delivery.start_time) || '--'}</div></div>
+                    <div class="info-row"><div class="info-label">Est. Delivery</div><div class="info-value">${formatDate(order.delivery.estimatedDeliveryTime) || '--'}</div></div>
                 </div>
             ` : '';
 
         container.innerHTML = `
                 <div class="order-card">
                     <div class="order-header">
-                        <span class="order-id">订单号：${order.orderId || order.order_id}</span>
+                        <span class="order-id">Order #: ${order.orderId || order.order_id}</span>
                         <span class="order-status ${statusClass}">${statusText}</span>
                     </div>
                     ${stepsHtml}
-                    <div class="items-list"><h4 style="margin-bottom:12px;">goods listing</h4>${itemsHtml || '<div>暂无商品</div>'}</div>
+                    <div class="items-list"><h4 style="margin-bottom:12px;">goods listing</h4>${itemsHtml || '<div>No items</div>'}</div>
                     <div class="info-row"><div class="info-label">time to place the order</div><div class="info-value">${formatDate(order.orderTime || order.order_time)}</div></div>
                     <div class="info-row"><div class="info-label">deliver address</div><div class="info-value">${order.deliveryAddress || order.delivery_address}</div></div>
                     ${paymentHtml}

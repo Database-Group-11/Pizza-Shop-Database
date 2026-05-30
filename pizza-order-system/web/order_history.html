@@ -133,7 +133,7 @@
     </div>
 
     <div id="ordersList">
-        <!-- 动态加载订单列表 -->
+        <!-- Dynamically load order list -->
     </div>
 </div>
 
@@ -157,7 +157,7 @@
         updateCartCount();
         loadOrders();
 
-        // 筛选按钮
+        // Filter buttons
         document.querySelectorAll('.filter-tab').forEach(btn => {
             btn.addEventListener('click', () => {
                 document.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
@@ -217,7 +217,7 @@
 
         if (currentFilter !== 'all') {
             if (currentFilter === 'progress') {
-                // 进行中：paid、preparing、delivering
+                // In progress: paid, preparing, delivering
                 filtered = allOrders.filter(o => ['paid', 'preparing', 'delivering'].includes(o.status));
             } else {
                 filtered = allOrders.filter(o => o.status === currentFilter);
@@ -232,12 +232,12 @@
         container.innerHTML = filtered.map(order => {
             const statusText = getStatusText(order.status);
             const statusClass = getStatusClass(order.status);
-            const pizzaNames = (order.items || []).map(item => `${item.pizzaName || item.pizza_name} x${item.quantity}`).join('、') || `订单号: ${order.orderId}`;
+            const pizzaNames = (order.items || []).map(item => `${item.pizzaName || item.pizza_name} x${item.quantity}`).join(', ') || `Order #: ${order.orderId}`;
 
             return `
                     <div class="order-item" onclick="viewOrderDetail(${order.orderId})">
                         <div class="order-header">
-                            <span class="order-id">订单号：${order.orderId}</span>
+                            <span class="order-id">Order #: ${order.orderId}</span>
                             <span class="order-date">${formatDate(order.orderTime || order.order_time)}</span>
                             <span class="order-status ${statusClass}">${statusText}</span>
                         </div>

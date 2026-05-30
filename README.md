@@ -94,7 +94,7 @@ If API returns empty data, check Artifact configuration:
 1. `File` → `Project Structure` → `Artifacts`
 2. Select `myproject:war exploded`
 3. In `Output Layout`:
-    - Remove `'myproject'模块:'Web'facet resources` (if exists)
+    - Remove `'myproject' module: 'Web' facet resources` (if exists)
     - Click `+` → `Directory Content` → Select `pizza-order-system/web` folder
 4. Click `Apply` → `OK`
 

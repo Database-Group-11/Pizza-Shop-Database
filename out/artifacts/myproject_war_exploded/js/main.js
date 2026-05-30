@@ -33,7 +33,7 @@ if (document.getElementById('loginForm')) {
 
         // 正常后端登录（等后端好了再启用）
         try {
-            const response = await fetch(`${API_BASE}/customer/login`, {
+            const response = await fetch(`${API_BASE}/api/customer/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ phone, password }),
@@ -183,7 +183,7 @@ if (document.getElementById('loginForm')) {
         }
 
         try {
-            const response = await fetch(`${API_BASE}/customer/login`, {
+            const response = await fetch(`${API_BASE}/api/customer/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ phone, password })
@@ -237,7 +237,7 @@ if (document.getElementById('registerForm')) {
         }
 
         try {
-            const response = await fetch(`${API_BASE}/customer/register`, {
+            const response = await fetch(`${API_BASE}/api/customer/register`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ name, phone, password, address })

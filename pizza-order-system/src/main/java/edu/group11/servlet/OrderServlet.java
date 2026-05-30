@@ -75,7 +75,7 @@ public class OrderServlet extends HttpServlet {
         }
 
         if (orderReq.getItems() == null || orderReq.getItems().isEmpty()) {
-            resp.getWriter().write(gson.toJson(Result.error(400, "订单不能为空")));
+            resp.getWriter().write(gson.toJson(Result.error(400, "Order cannot be empty")));
             return;
         }
 

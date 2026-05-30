@@ -150,7 +150,7 @@ public class PizzaDAO {
         return false;
     }
 
-    // 获取所有可用披萨（专门为 /api/pizzas/available 接口）
+    // Get all available pizzas (for /api/pizzas/available endpoint)
     public List<Pizza> getAvailable() {
         List<Pizza> availablePizzas = new ArrayList<>();
         String sql = "SELECT pizza_id, name, description, base_price, category, image, available " +
