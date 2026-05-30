@@ -32,8 +32,14 @@ public class PizzaServlet extends HttpServlet {
         response.setCharacterEncoding("UTF-8");
 
         try {
+            // 检查是否有category查询参数
+            String categoryParam = request.getParameter("category");
+            if (categoryParam != null && !categoryParam.isEmpty()) {
+                List<Pizza> pizzas = pizzaDAO.getPizzasByCategory(categoryParam);
+                sendResponse(response, 200, "success", pizzasToJson(pizzas));
+            }
             // GET /api/pizzas - get all pizzas
-            if (pathInfo == null || "/".equals(pathInfo)) {
+            else if (pathInfo == null || "/".equals(pathInfo)) {
                 List<Pizza> pizzas = pizzaDAO.getAllPizzas();
                 sendResponse(response, 200, "success", pizzasToJson(pizzas));
             }
@@ -167,7 +173,12 @@ public class PizzaServlet extends HttpServlet {
         Pizza pizza = new Pizza();
         pizza.setName(extractJsonValue(json, "name"));
         pizza.setDescription(extractJsonValue(json, "description"));
-        pizza.setBasePrice(Double.parseDouble(extractJsonValue(json, "base_price")));
+        // 兼容两种字段名
+        String basePriceStr = extractJsonValue(json, "basePrice");
+        if (basePriceStr == null) {
+            basePriceStr = extractJsonValue(json, "base_price");
+        }
+        pizza.setBasePrice(Double.parseDouble(basePriceStr));
         pizza.setCategory(extractJsonValue(json, "category"));
         pizza.setImage(extractJsonValue(json, "image"));
         String available = extractJsonValue(json, "available");
@@ -180,10 +191,10 @@ public class PizzaServlet extends HttpServlet {
     private String pizzaToJson(Pizza pizza) {
         StringBuilder json = new StringBuilder();
         json.append("{");
-        json.append("\"pizza_id\":").append(pizza.getPizzaId()).append(",");
+        json.append("\"pizzaId\":").append(pizza.getPizzaId()).append(",");
         json.append("\"name\":\"").append(escapeJson(pizza.getName())).append("\",");
         json.append("\"description\":\"").append(escapeJson(pizza.getDescription())).append("\",");
-        json.append("\"base_price\":").append(pizza.getBasePrice()).append(",");
+        json.append("\"basePrice\":").append(pizza.getBasePrice()).append(",");
         json.append("\"category\":\"").append(escapeJson(pizza.getCategory())).append("\",");
         json.append("\"image\":\"").append(escapeJson(pizza.getImage())).append("\",");
         json.append("\"available\":").append(pizza.isAvailable());
