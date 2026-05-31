@@ -337,7 +337,7 @@ This project was developed as a course assignment for the Database Systems cours
 |--------------|------------|-------------------|
 | Dong Qiutong | 24107752   | Database, backend |
 | Zhu Jingyi   | 24107747   | Frontend          |
-| Qiu Siqi     | 27107750   | Backend           |
+| Qiu Siqi     | 24107750   | Backend           |
 | Liu Yiming   | 24107755   | Backend           |
 | Gao Debo     | 24107756   | Testing           |
 
